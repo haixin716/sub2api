@@ -15,6 +15,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
+	"github.com/Wei-Shaw/sub2api/ent/requestlog"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
 	"github.com/Wei-Shaw/sub2api/ent/user"
 )
@@ -195,6 +196,21 @@ func (_u *APIKeyUpdate) AddUsageLogs(v ...*UsageLog) *APIKeyUpdate {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by IDs.
+func (_u *APIKeyUpdate) AddRequestLogIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.AddRequestLogIDs(ids...)
+	return _u
+}
+
+// AddRequestLogs adds the "request_logs" edges to the RequestLog entity.
+func (_u *APIKeyUpdate) AddRequestLogs(v ...*RequestLog) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestLogIDs(ids...)
+}
+
 // Mutation returns the APIKeyMutation object of the builder.
 func (_u *APIKeyUpdate) Mutation() *APIKeyMutation {
 	return _u.mutation
@@ -231,6 +247,27 @@ func (_u *APIKeyUpdate) RemoveUsageLogs(v ...*UsageLog) *APIKeyUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearRequestLogs clears all "request_logs" edges to the RequestLog entity.
+func (_u *APIKeyUpdate) ClearRequestLogs() *APIKeyUpdate {
+	_u.mutation.ClearRequestLogs()
+	return _u
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to RequestLog entities by IDs.
+func (_u *APIKeyUpdate) RemoveRequestLogIDs(ids ...int64) *APIKeyUpdate {
+	_u.mutation.RemoveRequestLogIDs(ids...)
+	return _u
+}
+
+// RemoveRequestLogs removes "request_logs" edges to RequestLog entities.
+func (_u *APIKeyUpdate) RemoveRequestLogs(v ...*RequestLog) *APIKeyUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -453,6 +490,51 @@ func (_u *APIKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestLogsIDs(); len(nodes) > 0 && !_u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{apikey.Label}
@@ -636,6 +718,21 @@ func (_u *APIKeyUpdateOne) AddUsageLogs(v ...*UsageLog) *APIKeyUpdateOne {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by IDs.
+func (_u *APIKeyUpdateOne) AddRequestLogIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.AddRequestLogIDs(ids...)
+	return _u
+}
+
+// AddRequestLogs adds the "request_logs" edges to the RequestLog entity.
+func (_u *APIKeyUpdateOne) AddRequestLogs(v ...*RequestLog) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestLogIDs(ids...)
+}
+
 // Mutation returns the APIKeyMutation object of the builder.
 func (_u *APIKeyUpdateOne) Mutation() *APIKeyMutation {
 	return _u.mutation
@@ -672,6 +769,27 @@ func (_u *APIKeyUpdateOne) RemoveUsageLogs(v ...*UsageLog) *APIKeyUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearRequestLogs clears all "request_logs" edges to the RequestLog entity.
+func (_u *APIKeyUpdateOne) ClearRequestLogs() *APIKeyUpdateOne {
+	_u.mutation.ClearRequestLogs()
+	return _u
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to RequestLog entities by IDs.
+func (_u *APIKeyUpdateOne) RemoveRequestLogIDs(ids ...int64) *APIKeyUpdateOne {
+	_u.mutation.RemoveRequestLogIDs(ids...)
+	return _u
+}
+
+// RemoveRequestLogs removes "request_logs" edges to RequestLog entities.
+func (_u *APIKeyUpdateOne) RemoveRequestLogs(v ...*RequestLog) *APIKeyUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestLogIDs(ids...)
 }
 
 // Where appends a list predicates to the APIKeyUpdate builder.
@@ -917,6 +1035,51 @@ func (_u *APIKeyUpdateOne) sqlSave(ctx context.Context) (_node *APIKey, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usagelog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestLogsIDs(); len(nodes) > 0 && !_u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   apikey.RequestLogsTable,
+			Columns: []string{apikey.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

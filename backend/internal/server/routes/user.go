@@ -64,6 +64,13 @@ func RegisterUserRoutes(
 			usage.POST("/dashboard/api-keys-usage", h.Usage.DashboardAPIKeysUsage)
 		}
 
+		// 请求记录
+		requests := authenticated.Group("/requests")
+		{
+			requests.GET("", h.Request.List)
+			requests.GET("/:id", h.Request.GetByID)
+		}
+
 		// 卡密兑换
 		redeem := authenticated.Group("/redeem")
 		{

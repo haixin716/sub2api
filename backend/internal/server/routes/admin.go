@@ -62,6 +62,9 @@ func RegisterAdminRoutes(
 		// 使用记录管理
 		registerUsageRoutes(admin, h)
 
+		// 请求记录管理
+		registerRequestRoutes(admin, h)
+
 		// 用户属性管理
 		registerUserAttributeRoutes(admin, h)
 	}
@@ -357,6 +360,16 @@ func registerUsageRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		usage.GET("/cleanup-tasks", h.Admin.Usage.ListCleanupTasks)
 		usage.POST("/cleanup-tasks", h.Admin.Usage.CreateCleanupTask)
 		usage.POST("/cleanup-tasks/:id/cancel", h.Admin.Usage.CancelCleanupTask)
+	}
+}
+
+func registerRequestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
+	requests := admin.Group("/requests")
+	{
+		requests.GET("", h.Admin.Request.List)
+		requests.GET("/:id", h.Admin.Request.GetByID)
+		requests.GET("/search-users", h.Admin.Request.SearchUsers)
+		requests.GET("/search-api-keys", h.Admin.Request.SearchAPIKeys)
 	}
 }
 

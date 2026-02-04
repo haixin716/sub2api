@@ -545,3 +545,54 @@ func PromoCodeUsageFromService(u *service.PromoCodeUsage) *PromoCodeUsage {
 		User:        UserFromServiceShallow(u.User),
 	}
 }
+
+// requestLogFromServiceUser 将 Service 层的 RequestLog 转换为用户端 DTO
+func requestLogFromServiceUser(l *service.RequestLog) RequestLog {
+	// 普通用户 DTO：严禁包含管理员字段（ip_address、account）
+	return RequestLog{
+		ID:             l.ID,
+		UserID:         l.UserID,
+		APIKeyID:       l.APIKeyID,
+		AccountID:      l.AccountID,
+		RequestID:      l.RequestID,
+		Model:          l.Model,
+		GroupID:        l.GroupID,
+		RequestBody:    l.RequestBody,
+		RequestMethod:  l.RequestMethod,
+		RequestPath:    l.RequestPath,
+		ResponseBody:   l.ResponseBody,
+		ResponseStatus: l.ResponseStatus,
+		Stream:         l.Stream,
+		DurationMs:     l.DurationMs,
+		UserAgent:      l.UserAgent,
+		IsError:        l.IsError,
+		ErrorMessage:   l.ErrorMessage,
+		ErrorType:      l.ErrorType,
+		CreatedAt:      l.CreatedAt,
+		User:           UserFromServiceShallow(l.User),
+		APIKey:         APIKeyFromService(l.APIKey),
+		Group:          GroupFromServiceShallow(l.Group),
+	}
+}
+
+// RequestLogFromService 将 Service 层的 RequestLog 转换为用户端 DTO
+func RequestLogFromService(l *service.RequestLog) *RequestLog {
+	if l == nil {
+		return nil
+	}
+	r := requestLogFromServiceUser(l)
+	return &r
+}
+
+// RequestLogFromServiceAdmin 将 Service 层的 RequestLog 转换为管理员端 DTO
+// 包含 IP 地址和账号信息
+func RequestLogFromServiceAdmin(l *service.RequestLog) *AdminRequestLog {
+	if l == nil {
+		return nil
+	}
+	return &AdminRequestLog{
+		RequestLog: requestLogFromServiceUser(l),
+		IPAddress:  l.IPAddress,
+		Account:    AccountSummaryFromService(l.Account),
+	}
+}

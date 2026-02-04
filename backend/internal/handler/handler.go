@@ -22,6 +22,7 @@ type AdminHandlers struct {
 	System           *admin.SystemHandler
 	Subscription     *admin.SubscriptionHandler
 	Usage            *admin.UsageHandler
+	Request          *admin.RequestHandler
 	UserAttribute    *admin.UserAttributeHandler
 }
 
@@ -31,6 +32,7 @@ type Handlers struct {
 	User          *UserHandler
 	APIKey        *APIKeyHandler
 	Usage         *UsageHandler
+	Request       *RequestHandler
 	Redeem        *RedeemHandler
 	Subscription  *SubscriptionHandler
 	Admin         *AdminHandlers

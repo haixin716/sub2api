@@ -200,6 +200,7 @@ type GatewayService struct {
 	accountRepo         AccountRepository
 	groupRepo           GroupRepository
 	usageLogRepo        UsageLogRepository
+	requestLogRepo      RequestLogRepository
 	userRepo            UserRepository
 	userSubRepo         UserSubscriptionRepository
 	cache               GatewayCache
@@ -221,6 +222,7 @@ func NewGatewayService(
 	accountRepo AccountRepository,
 	groupRepo GroupRepository,
 	usageLogRepo UsageLogRepository,
+	requestLogRepo RequestLogRepository,
 	userRepo UserRepository,
 	userSubRepo UserSubscriptionRepository,
 	cache GatewayCache,
@@ -240,6 +242,7 @@ func NewGatewayService(
 		accountRepo:         accountRepo,
 		groupRepo:           groupRepo,
 		usageLogRepo:        usageLogRepo,
+		requestLogRepo:      requestLogRepo,
 		userRepo:            userRepo,
 		userSubRepo:         userSubRepo,
 		cache:               cache,
@@ -3901,4 +3904,78 @@ func (s *GatewayService) GetAvailableModels(ctx context.Context, groupID *int64,
 	}
 
 	return models
+}
+
+// RecordRequest 记录请求日志
+func (s *GatewayService) RecordRequest(ctx context.Context, input *RecordRequestInput) error {
+	if input == nil || input.Result == nil {
+		return nil
+	}
+
+	result := input.Result
+	apiKey := input.APIKey
+	user := input.User
+	account := input.Account
+
+	// 确定是否为错误请求
+	isError := input.ResponseStatus < 200 || input.ResponseStatus >= 400
+	var errorMsg *string
+	var errorType *string
+	
+	// 如果是错误响应，尝试从响应体中提取错误信息
+	if isError && input.ResponseBody != nil {
+		// 简单处理，实际可以解析 JSON 提取具体错误信息
+		errorMsg = input.ResponseBody
+		// 可以根据状态码推断错误类型
+		switch input.ResponseStatus {
+		case 400:
+			errType := "invalid_request_error"
+			errorType = &errType
+		case 401, 403:
+			errType := "authentication_error"
+			errorType = &errType
+		case 429:
+			errType := "rate_limit_error"
+			errorType = &errType
+		case 500, 502, 503, 504:
+			errType := "api_error"
+			errorType = &errType
+		default:
+			errType := "unknown_error"
+			errorType = &errType
+		}
+	}
+
+	// 计算耗时
+	durationMs := int(result.Duration.Milliseconds())
+
+	// 构建请求日志
+	requestLog := &RequestLog{
+		UserID:         user.ID,
+		APIKeyID:       apiKey.ID,
+		AccountID:      account.ID,
+		RequestID:      result.RequestID,
+		Model:          result.Model,
+		GroupID:        apiKey.GroupID,
+		RequestBody:    input.RequestBody,
+		RequestMethod:  input.RequestMethod,
+		RequestPath:    input.RequestPath,
+		ResponseBody:   input.ResponseBody,
+		ResponseStatus: input.ResponseStatus,
+		Stream:         result.Stream,
+		DurationMs:     &durationMs,
+		IPAddress:      &input.IPAddress,
+		UserAgent:      &input.UserAgent,
+		IsError:        isError,
+		ErrorMessage:   errorMsg,
+		ErrorType:      errorType,
+	}
+
+	// 调用 Repository 创建记录
+	if err := s.requestLogRepo.Create(ctx, requestLog); err != nil {
+		log.Printf("Failed to create request log: %v", err)
+		return err
+	}
+
+	return nil
 }

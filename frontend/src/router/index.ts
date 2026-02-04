@@ -140,6 +140,18 @@ const routes: RouteRecordRaw[] = [
     }
   },
   {
+    path: '/requests',
+    name: 'Requests',
+    component: () => import('@/views/user/RequestView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: false,
+      title: 'Request Logs',
+      titleKey: 'requests.title',
+      descriptionKey: 'requests.description'
+    }
+  },
+  {
     path: '/redeem',
     name: 'Redeem',
     component: () => import('@/views/user/RedeemView.vue'),
@@ -323,6 +335,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Usage Records',
       titleKey: 'admin.usage.title',
       descriptionKey: 'admin.usage.description'
+    }
+  },
+  {
+    path: '/admin/requests',
+    name: 'AdminRequests',
+    component: () => import('@/views/admin/RequestView.vue'),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+      title: 'Request Logs',
+      titleKey: 'admin.requests.title',
+      descriptionKey: 'admin.requests.description'
     }
   },
 

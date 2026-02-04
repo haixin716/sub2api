@@ -15,6 +15,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/group"
 	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
 	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
+	"github.com/Wei-Shaw/sub2api/ent/requestlog"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
 	"github.com/Wei-Shaw/sub2api/ent/user"
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
@@ -297,6 +298,21 @@ func (_c *UserCreate) AddUsageLogs(v ...*UsageLog) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddUsageLogIDs(ids...)
+}
+
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by IDs.
+func (_c *UserCreate) AddRequestLogIDs(ids ...int64) *UserCreate {
+	_c.mutation.AddRequestLogIDs(ids...)
+	return _c
+}
+
+// AddRequestLogs adds the "request_logs" edges to the RequestLog entity.
+func (_c *UserCreate) AddRequestLogs(v ...*RequestLog) *UserCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRequestLogIDs(ids...)
 }
 
 // AddAttributeValueIDs adds the "attribute_values" edge to the UserAttributeValue entity by IDs.
@@ -647,6 +663,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usagelog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RequestLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

@@ -16,6 +16,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/predicate"
 	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
 	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
+	"github.com/Wei-Shaw/sub2api/ent/requestlog"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
 	"github.com/Wei-Shaw/sub2api/ent/user"
 	"github.com/Wei-Shaw/sub2api/ent/userattributevalue"
@@ -331,6 +332,21 @@ func (_u *UserUpdate) AddUsageLogs(v ...*UsageLog) *UserUpdate {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by IDs.
+func (_u *UserUpdate) AddRequestLogIDs(ids ...int64) *UserUpdate {
+	_u.mutation.AddRequestLogIDs(ids...)
+	return _u
+}
+
+// AddRequestLogs adds the "request_logs" edges to the RequestLog entity.
+func (_u *UserUpdate) AddRequestLogs(v ...*RequestLog) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestLogIDs(ids...)
+}
+
 // AddAttributeValueIDs adds the "attribute_values" edge to the UserAttributeValue entity by IDs.
 func (_u *UserUpdate) AddAttributeValueIDs(ids ...int64) *UserUpdate {
 	_u.mutation.AddAttributeValueIDs(ids...)
@@ -490,6 +506,27 @@ func (_u *UserUpdate) RemoveUsageLogs(v ...*UsageLog) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearRequestLogs clears all "request_logs" edges to the RequestLog entity.
+func (_u *UserUpdate) ClearRequestLogs() *UserUpdate {
+	_u.mutation.ClearRequestLogs()
+	return _u
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to RequestLog entities by IDs.
+func (_u *UserUpdate) RemoveRequestLogIDs(ids ...int64) *UserUpdate {
+	_u.mutation.RemoveRequestLogIDs(ids...)
+	return _u
+}
+
+// RemoveRequestLogs removes "request_logs" edges to RequestLog entities.
+func (_u *UserUpdate) RemoveRequestLogs(v ...*RequestLog) *UserUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestLogIDs(ids...)
 }
 
 // ClearAttributeValues clears all "attribute_values" edges to the UserAttributeValue entity.
@@ -954,6 +991,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestLogsIDs(); len(nodes) > 0 && !_u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.AttributeValuesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1360,6 +1442,21 @@ func (_u *UserUpdateOne) AddUsageLogs(v ...*UsageLog) *UserUpdateOne {
 	return _u.AddUsageLogIDs(ids...)
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by IDs.
+func (_u *UserUpdateOne) AddRequestLogIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.AddRequestLogIDs(ids...)
+	return _u
+}
+
+// AddRequestLogs adds the "request_logs" edges to the RequestLog entity.
+func (_u *UserUpdateOne) AddRequestLogs(v ...*RequestLog) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRequestLogIDs(ids...)
+}
+
 // AddAttributeValueIDs adds the "attribute_values" edge to the UserAttributeValue entity by IDs.
 func (_u *UserUpdateOne) AddAttributeValueIDs(ids ...int64) *UserUpdateOne {
 	_u.mutation.AddAttributeValueIDs(ids...)
@@ -1519,6 +1616,27 @@ func (_u *UserUpdateOne) RemoveUsageLogs(v ...*UsageLog) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveUsageLogIDs(ids...)
+}
+
+// ClearRequestLogs clears all "request_logs" edges to the RequestLog entity.
+func (_u *UserUpdateOne) ClearRequestLogs() *UserUpdateOne {
+	_u.mutation.ClearRequestLogs()
+	return _u
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to RequestLog entities by IDs.
+func (_u *UserUpdateOne) RemoveRequestLogIDs(ids ...int64) *UserUpdateOne {
+	_u.mutation.RemoveRequestLogIDs(ids...)
+	return _u
+}
+
+// RemoveRequestLogs removes "request_logs" edges to RequestLog entities.
+func (_u *UserUpdateOne) RemoveRequestLogs(v ...*RequestLog) *UserUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRequestLogIDs(ids...)
 }
 
 // ClearAttributeValues clears all "attribute_values" edges to the UserAttributeValue entity.
@@ -2006,6 +2124,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(usagelog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRequestLogsIDs(); len(nodes) > 0 && !_u.mutation.RequestLogsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RequestLogsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RequestLogsTable,
+			Columns: []string{user.RequestLogsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

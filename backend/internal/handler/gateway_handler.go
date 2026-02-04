@@ -116,6 +116,11 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 
 	setOpsRequestContext(c, reqModel, reqStream, body)
 
+	// 捕获请求数据用于请求日志记录
+	c.Set("captured_request_body", string(body))
+	c.Set("captured_request_method", c.Request.Method)
+	c.Set("captured_request_path", c.Request.URL.Path)
+
 	// 验证 model 必填
 	if reqModel == "" {
 		h.errorResponse(c, http.StatusBadRequest, "invalid_request_error", "model is required")
@@ -308,6 +313,24 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 			userAgent := c.GetHeader("User-Agent")
 			clientIP := ip.GetClientIP(c)
 
+			// 捕获响应数据用于请求日志记录
+			var responseBody *string
+			var responseStatus int = 200
+			// 对于非流式响应，尝试从响应中提取（暂时简化处理）
+			if !result.Stream {
+				// 响应体已经发送给客户端，这里只能记录元数据
+				// 完整的响应捕获需要在 Forward 方法中实现
+			}
+
+			// 从 context 提取捕获的请求数据
+			reqBodyVal, _ := c.Get("captured_request_body")
+			reqMethodVal, _ := c.Get("captured_request_method")
+			reqPathVal, _ := c.Get("captured_request_path")
+
+			capturedReqBody, _ := reqBodyVal.(string)
+			capturedReqMethod, _ := reqMethodVal.(string)
+			capturedReqPath, _ := reqPathVal.(string)
+
 			// 异步记录使用量（subscription已在函数开头获取）
 			go func(result *service.ForwardResult, usedAccount *service.Account, ua, clientIP string) {
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -324,6 +347,27 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 					log.Printf("Record usage failed: %v", err)
 				}
 			}(result, account, userAgent, clientIP)
+
+			// 异步记录请求日志
+			go func(result *service.ForwardResult, usedAccount *service.Account, ua, clientIP, reqBody, reqMethod, reqPath string, respBody *string, respStatus int) {
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				if err := h.gatewayService.RecordRequest(ctx, &service.RecordRequestInput{
+					Result:         result,
+					APIKey:         apiKey,
+					User:           apiKey.User,
+					Account:        usedAccount,
+					UserAgent:      ua,
+					IPAddress:      clientIP,
+					RequestBody:    reqBody,
+					RequestMethod:  reqMethod,
+					RequestPath:    reqPath,
+					ResponseBody:   respBody,
+					ResponseStatus: respStatus,
+				}); err != nil {
+					log.Printf("Record request failed: %v", err)
+				}
+			}(result, account, userAgent, clientIP, capturedReqBody, capturedReqMethod, capturedReqPath, responseBody, responseStatus)
 			return
 		}
 	}
@@ -444,6 +488,23 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 		userAgent := c.GetHeader("User-Agent")
 		clientIP := ip.GetClientIP(c)
 
+		// 捕获响应数据用于请求日志记录
+		var responseBody *string
+		var responseStatus int = 200
+		// 对于非流式响应，尝试从响应中提取（暂时简化处理）
+		if !result.Stream {
+			// 响应体已经发送给客户端，这里只能记录元数据
+		}
+
+		// 从 context 提取捕获的请求数据
+		reqBodyVal, _ := c.Get("captured_request_body")
+		reqMethodVal, _ := c.Get("captured_request_method")
+		reqPathVal, _ := c.Get("captured_request_path")
+
+		capturedReqBody, _ := reqBodyVal.(string)
+		capturedReqMethod, _ := reqMethodVal.(string)
+		capturedReqPath, _ := reqPathVal.(string)
+
 		// 异步记录使用量（subscription已在函数开头获取）
 		go func(result *service.ForwardResult, usedAccount *service.Account, ua, clientIP string) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -460,6 +521,27 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 				log.Printf("Record usage failed: %v", err)
 			}
 		}(result, account, userAgent, clientIP)
+
+		// 异步记录请求日志
+		go func(result *service.ForwardResult, usedAccount *service.Account, ua, clientIP, reqBody, reqMethod, reqPath string, respBody *string, respStatus int) {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := h.gatewayService.RecordRequest(ctx, &service.RecordRequestInput{
+				Result:         result,
+				APIKey:         apiKey,
+				User:           apiKey.User,
+				Account:        usedAccount,
+				UserAgent:      ua,
+				IPAddress:      clientIP,
+				RequestBody:    reqBody,
+				RequestMethod:  reqMethod,
+				RequestPath:    reqPath,
+				ResponseBody:   respBody,
+				ResponseStatus: respStatus,
+			}); err != nil {
+				log.Printf("Record request failed: %v", err)
+			}
+		}(result, account, userAgent, clientIP, capturedReqBody, capturedReqMethod, capturedReqPath, responseBody, responseStatus)
 		return
 	}
 }

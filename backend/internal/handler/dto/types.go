@@ -380,3 +380,53 @@ type PromoCodeUsage struct {
 
 	User *User `json:"user,omitempty"`
 }
+
+// RequestLog 定义请求日志的 DTO（用户端）
+type RequestLog struct {
+	ID        int64  `json:"id"`
+	UserID    int64  `json:"user_id"`
+	APIKeyID  int64  `json:"api_key_id"`
+	AccountID int64  `json:"account_id"`
+	RequestID string `json:"request_id"`
+	Model     string `json:"model"`
+
+	GroupID *int64 `json:"group_id"`
+
+	// 请求信息
+	RequestBody   string `json:"request_body"`
+	RequestMethod string `json:"request_method"`
+	RequestPath   string `json:"request_path"`
+
+	// 响应信息
+	ResponseBody   *string `json:"response_body"`
+	ResponseStatus int     `json:"response_status"`
+
+	// 元数据
+	Stream     bool `json:"stream"`
+	DurationMs *int `json:"duration_ms"`
+
+	// User-Agent（用户可见）
+	UserAgent *string `json:"user_agent,omitempty"`
+
+	// 错误信息
+	IsError      bool    `json:"is_error"`
+	ErrorMessage *string `json:"error_message,omitempty"`
+	ErrorType    *string `json:"error_type,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+
+	User   *User   `json:"user,omitempty"`
+	APIKey *APIKey `json:"api_key,omitempty"`
+	Group  *Group  `json:"group,omitempty"`
+}
+
+// AdminRequestLog 是管理员接口使用的请求日志 DTO（包含管理员字段）
+type AdminRequestLog struct {
+	RequestLog
+
+	// IPAddress 用户请求 IP（仅管理员可见）
+	IPAddress *string `json:"ip_address,omitempty"`
+
+	// Account 最小账号信息（避免泄露敏感字段）
+	Account *AccountSummary `json:"account,omitempty"`
+}

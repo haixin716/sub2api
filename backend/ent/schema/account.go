@@ -196,6 +196,8 @@ func (Account) Edges() []ent.Edge {
 			Unique(),
 		// usage_logs: 该账户的使用日志
 		edge.To("usage_logs", UsageLog.Type),
+		// request_logs: 该账户的请求日志
+		edge.To("request_logs", RequestLog.Type),
 	}
 }
 

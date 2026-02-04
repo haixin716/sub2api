@@ -421,6 +421,118 @@ var (
 			},
 		},
 	}
+	// RequestLogsColumns holds the columns for the "request_logs" table.
+	RequestLogsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt64, Increment: true},
+		{Name: "request_id", Type: field.TypeString, Size: 64},
+		{Name: "model", Type: field.TypeString, Size: 100},
+		{Name: "request_body", Type: field.TypeString, Size: 2147483647},
+		{Name: "request_method", Type: field.TypeString, Size: 10, Default: "POST"},
+		{Name: "request_path", Type: field.TypeString, Size: 255, Default: "/v1/messages"},
+		{Name: "response_body", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "response_status", Type: field.TypeInt, Default: 200},
+		{Name: "stream", Type: field.TypeBool, Default: false},
+		{Name: "duration_ms", Type: field.TypeInt, Nullable: true},
+		{Name: "ip_address", Type: field.TypeString, Nullable: true, Size: 45},
+		{Name: "user_agent", Type: field.TypeString, Nullable: true, Size: 512},
+		{Name: "is_error", Type: field.TypeBool, Default: false},
+		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "error_type", Type: field.TypeString, Nullable: true, Size: 50},
+		{Name: "created_at", Type: field.TypeTime, SchemaType: map[string]string{"postgres": "timestamptz"}},
+		{Name: "api_key_id", Type: field.TypeInt64},
+		{Name: "account_id", Type: field.TypeInt64},
+		{Name: "group_id", Type: field.TypeInt64, Nullable: true},
+		{Name: "user_id", Type: field.TypeInt64},
+	}
+	// RequestLogsTable holds the schema information for the "request_logs" table.
+	RequestLogsTable = &schema.Table{
+		Name:       "request_logs",
+		Columns:    RequestLogsColumns,
+		PrimaryKey: []*schema.Column{RequestLogsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "request_logs_api_keys_request_logs",
+				Columns:    []*schema.Column{RequestLogsColumns[16]},
+				RefColumns: []*schema.Column{APIKeysColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "request_logs_accounts_request_logs",
+				Columns:    []*schema.Column{RequestLogsColumns[17]},
+				RefColumns: []*schema.Column{AccountsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "request_logs_groups_request_logs",
+				Columns:    []*schema.Column{RequestLogsColumns[18]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "request_logs_users_request_logs",
+				Columns:    []*schema.Column{RequestLogsColumns[19]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "requestlog_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[19]},
+			},
+			{
+				Name:    "requestlog_api_key_id",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[16]},
+			},
+			{
+				Name:    "requestlog_account_id",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[17]},
+			},
+			{
+				Name:    "requestlog_group_id",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[18]},
+			},
+			{
+				Name:    "requestlog_request_id",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[1]},
+			},
+			{
+				Name:    "requestlog_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[15]},
+			},
+			{
+				Name:    "requestlog_model",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[2]},
+			},
+			{
+				Name:    "requestlog_is_error",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[12]},
+			},
+			{
+				Name:    "requestlog_user_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[19], RequestLogsColumns[15]},
+			},
+			{
+				Name:    "requestlog_api_key_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[16], RequestLogsColumns[15]},
+			},
+			{
+				Name:    "requestlog_is_error_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[12], RequestLogsColumns[15]},
+			},
+		},
+	}
 	// SettingsColumns holds the columns for the "settings" table.
 	SettingsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
@@ -845,6 +957,7 @@ var (
 		PromoCodeUsagesTable,
 		ProxiesTable,
 		RedeemCodesTable,
+		RequestLogsTable,
 		SettingsTable,
 		UsageCleanupTasksTable,
 		UsageLogsTable,
@@ -889,6 +1002,13 @@ func init() {
 	RedeemCodesTable.ForeignKeys[1].RefTable = UsersTable
 	RedeemCodesTable.Annotation = &entsql.Annotation{
 		Table: "redeem_codes",
+	}
+	RequestLogsTable.ForeignKeys[0].RefTable = APIKeysTable
+	RequestLogsTable.ForeignKeys[1].RefTable = AccountsTable
+	RequestLogsTable.ForeignKeys[2].RefTable = GroupsTable
+	RequestLogsTable.ForeignKeys[3].RefTable = UsersTable
+	RequestLogsTable.Annotation = &entsql.Annotation{
+		Table: "request_logs",
 	}
 	SettingsTable.Annotation = &entsql.Annotation{
 		Table: "settings",

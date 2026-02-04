@@ -21,6 +21,7 @@ import (
 	"github.com/Wei-Shaw/sub2api/ent/promocodeusage"
 	"github.com/Wei-Shaw/sub2api/ent/proxy"
 	"github.com/Wei-Shaw/sub2api/ent/redeemcode"
+	"github.com/Wei-Shaw/sub2api/ent/requestlog"
 	"github.com/Wei-Shaw/sub2api/ent/setting"
 	"github.com/Wei-Shaw/sub2api/ent/usagecleanuptask"
 	"github.com/Wei-Shaw/sub2api/ent/usagelog"
@@ -48,6 +49,7 @@ const (
 	TypePromoCodeUsage          = "PromoCodeUsage"
 	TypeProxy                   = "Proxy"
 	TypeRedeemCode              = "RedeemCode"
+	TypeRequestLog              = "RequestLog"
 	TypeSetting                 = "Setting"
 	TypeUsageCleanupTask        = "UsageCleanupTask"
 	TypeUsageLog                = "UsageLog"
@@ -61,30 +63,33 @@ const (
 // APIKeyMutation represents an operation that mutates the APIKey nodes in the graph.
 type APIKeyMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int64
-	created_at         *time.Time
-	updated_at         *time.Time
-	deleted_at         *time.Time
-	key                *string
-	name               *string
-	status             *string
-	ip_whitelist       *[]string
-	appendip_whitelist []string
-	ip_blacklist       *[]string
-	appendip_blacklist []string
-	clearedFields      map[string]struct{}
-	user               *int64
-	cleareduser        bool
-	group              *int64
-	clearedgroup       bool
-	usage_logs         map[int64]struct{}
-	removedusage_logs  map[int64]struct{}
-	clearedusage_logs  bool
-	done               bool
-	oldValue           func(context.Context) (*APIKey, error)
-	predicates         []predicate.APIKey
+	op                  Op
+	typ                 string
+	id                  *int64
+	created_at          *time.Time
+	updated_at          *time.Time
+	deleted_at          *time.Time
+	key                 *string
+	name                *string
+	status              *string
+	ip_whitelist        *[]string
+	appendip_whitelist  []string
+	ip_blacklist        *[]string
+	appendip_blacklist  []string
+	clearedFields       map[string]struct{}
+	user                *int64
+	cleareduser         bool
+	group               *int64
+	clearedgroup        bool
+	usage_logs          map[int64]struct{}
+	removedusage_logs   map[int64]struct{}
+	clearedusage_logs   bool
+	request_logs        map[int64]struct{}
+	removedrequest_logs map[int64]struct{}
+	clearedrequest_logs bool
+	done                bool
+	oldValue            func(context.Context) (*APIKey, error)
+	predicates          []predicate.APIKey
 }
 
 var _ ent.Mutation = (*APIKeyMutation)(nil)
@@ -737,6 +742,60 @@ func (m *APIKeyMutation) ResetUsageLogs() {
 	m.removedusage_logs = nil
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by ids.
+func (m *APIKeyMutation) AddRequestLogIDs(ids ...int64) {
+	if m.request_logs == nil {
+		m.request_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.request_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequestLogs clears the "request_logs" edge to the RequestLog entity.
+func (m *APIKeyMutation) ClearRequestLogs() {
+	m.clearedrequest_logs = true
+}
+
+// RequestLogsCleared reports if the "request_logs" edge to the RequestLog entity was cleared.
+func (m *APIKeyMutation) RequestLogsCleared() bool {
+	return m.clearedrequest_logs
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to the RequestLog entity by IDs.
+func (m *APIKeyMutation) RemoveRequestLogIDs(ids ...int64) {
+	if m.removedrequest_logs == nil {
+		m.removedrequest_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.request_logs, ids[i])
+		m.removedrequest_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequestLogs returns the removed IDs of the "request_logs" edge to the RequestLog entity.
+func (m *APIKeyMutation) RemovedRequestLogsIDs() (ids []int64) {
+	for id := range m.removedrequest_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequestLogsIDs returns the "request_logs" edge IDs in the mutation.
+func (m *APIKeyMutation) RequestLogsIDs() (ids []int64) {
+	for id := range m.request_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequestLogs resets all changes to the "request_logs" edge.
+func (m *APIKeyMutation) ResetRequestLogs() {
+	m.request_logs = nil
+	m.clearedrequest_logs = false
+	m.removedrequest_logs = nil
+}
+
 // Where appends a list predicates to the APIKeyMutation builder.
 func (m *APIKeyMutation) Where(ps ...predicate.APIKey) {
 	m.predicates = append(m.predicates, ps...)
@@ -1053,7 +1112,7 @@ func (m *APIKeyMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *APIKeyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.user != nil {
 		edges = append(edges, apikey.EdgeUser)
 	}
@@ -1062,6 +1121,9 @@ func (m *APIKeyMutation) AddedEdges() []string {
 	}
 	if m.usage_logs != nil {
 		edges = append(edges, apikey.EdgeUsageLogs)
+	}
+	if m.request_logs != nil {
+		edges = append(edges, apikey.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -1084,15 +1146,24 @@ func (m *APIKeyMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case apikey.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.request_logs))
+		for id := range m.request_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *APIKeyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedusage_logs != nil {
 		edges = append(edges, apikey.EdgeUsageLogs)
+	}
+	if m.removedrequest_logs != nil {
+		edges = append(edges, apikey.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -1107,13 +1178,19 @@ func (m *APIKeyMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case apikey.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.removedrequest_logs))
+		for id := range m.removedrequest_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *APIKeyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.cleareduser {
 		edges = append(edges, apikey.EdgeUser)
 	}
@@ -1122,6 +1199,9 @@ func (m *APIKeyMutation) ClearedEdges() []string {
 	}
 	if m.clearedusage_logs {
 		edges = append(edges, apikey.EdgeUsageLogs)
+	}
+	if m.clearedrequest_logs {
+		edges = append(edges, apikey.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -1136,6 +1216,8 @@ func (m *APIKeyMutation) EdgeCleared(name string) bool {
 		return m.clearedgroup
 	case apikey.EdgeUsageLogs:
 		return m.clearedusage_logs
+	case apikey.EdgeRequestLogs:
+		return m.clearedrequest_logs
 	}
 	return false
 }
@@ -1166,6 +1248,9 @@ func (m *APIKeyMutation) ResetEdge(name string) error {
 		return nil
 	case apikey.EdgeUsageLogs:
 		m.ResetUsageLogs()
+		return nil
+	case apikey.EdgeRequestLogs:
+		m.ResetRequestLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown APIKey edge %s", name)
@@ -1213,6 +1298,9 @@ type AccountMutation struct {
 	usage_logs            map[int64]struct{}
 	removedusage_logs     map[int64]struct{}
 	clearedusage_logs     bool
+	request_logs          map[int64]struct{}
+	removedrequest_logs   map[int64]struct{}
+	clearedrequest_logs   bool
 	done                  bool
 	oldValue              func(context.Context) (*Account, error)
 	predicates            []predicate.Account
@@ -2567,6 +2655,60 @@ func (m *AccountMutation) ResetUsageLogs() {
 	m.removedusage_logs = nil
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by ids.
+func (m *AccountMutation) AddRequestLogIDs(ids ...int64) {
+	if m.request_logs == nil {
+		m.request_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.request_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequestLogs clears the "request_logs" edge to the RequestLog entity.
+func (m *AccountMutation) ClearRequestLogs() {
+	m.clearedrequest_logs = true
+}
+
+// RequestLogsCleared reports if the "request_logs" edge to the RequestLog entity was cleared.
+func (m *AccountMutation) RequestLogsCleared() bool {
+	return m.clearedrequest_logs
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to the RequestLog entity by IDs.
+func (m *AccountMutation) RemoveRequestLogIDs(ids ...int64) {
+	if m.removedrequest_logs == nil {
+		m.removedrequest_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.request_logs, ids[i])
+		m.removedrequest_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequestLogs returns the removed IDs of the "request_logs" edge to the RequestLog entity.
+func (m *AccountMutation) RemovedRequestLogsIDs() (ids []int64) {
+	for id := range m.removedrequest_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequestLogsIDs returns the "request_logs" edge IDs in the mutation.
+func (m *AccountMutation) RequestLogsIDs() (ids []int64) {
+	for id := range m.request_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequestLogs resets all changes to the "request_logs" edge.
+func (m *AccountMutation) ResetRequestLogs() {
+	m.request_logs = nil
+	m.clearedrequest_logs = false
+	m.removedrequest_logs = nil
+}
+
 // Where appends a list predicates to the AccountMutation builder.
 func (m *AccountMutation) Where(ps ...predicate.Account) {
 	m.predicates = append(m.predicates, ps...)
@@ -3222,7 +3364,7 @@ func (m *AccountMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AccountMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.groups != nil {
 		edges = append(edges, account.EdgeGroups)
 	}
@@ -3231,6 +3373,9 @@ func (m *AccountMutation) AddedEdges() []string {
 	}
 	if m.usage_logs != nil {
 		edges = append(edges, account.EdgeUsageLogs)
+	}
+	if m.request_logs != nil {
+		edges = append(edges, account.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -3255,18 +3400,27 @@ func (m *AccountMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case account.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.request_logs))
+		for id := range m.request_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AccountMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedgroups != nil {
 		edges = append(edges, account.EdgeGroups)
 	}
 	if m.removedusage_logs != nil {
 		edges = append(edges, account.EdgeUsageLogs)
+	}
+	if m.removedrequest_logs != nil {
+		edges = append(edges, account.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -3287,13 +3441,19 @@ func (m *AccountMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case account.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.removedrequest_logs))
+		for id := range m.removedrequest_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AccountMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedgroups {
 		edges = append(edges, account.EdgeGroups)
 	}
@@ -3302,6 +3462,9 @@ func (m *AccountMutation) ClearedEdges() []string {
 	}
 	if m.clearedusage_logs {
 		edges = append(edges, account.EdgeUsageLogs)
+	}
+	if m.clearedrequest_logs {
+		edges = append(edges, account.EdgeRequestLogs)
 	}
 	return edges
 }
@@ -3316,6 +3479,8 @@ func (m *AccountMutation) EdgeCleared(name string) bool {
 		return m.clearedproxy
 	case account.EdgeUsageLogs:
 		return m.clearedusage_logs
+	case account.EdgeRequestLogs:
+		return m.clearedrequest_logs
 	}
 	return false
 }
@@ -3343,6 +3508,9 @@ func (m *AccountMutation) ResetEdge(name string) error {
 		return nil
 	case account.EdgeUsageLogs:
 		m.ResetUsageLogs()
+		return nil
+	case account.EdgeRequestLogs:
+		m.ResetRequestLogs()
 		return nil
 	}
 	return fmt.Errorf("unknown Account edge %s", name)
@@ -3882,6 +4050,9 @@ type GroupMutation struct {
 	usage_logs               map[int64]struct{}
 	removedusage_logs        map[int64]struct{}
 	clearedusage_logs        bool
+	request_logs             map[int64]struct{}
+	removedrequest_logs      map[int64]struct{}
+	clearedrequest_logs      bool
 	accounts                 map[int64]struct{}
 	removedaccounts          map[int64]struct{}
 	clearedaccounts          bool
@@ -5280,6 +5451,60 @@ func (m *GroupMutation) ResetUsageLogs() {
 	m.removedusage_logs = nil
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by ids.
+func (m *GroupMutation) AddRequestLogIDs(ids ...int64) {
+	if m.request_logs == nil {
+		m.request_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.request_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequestLogs clears the "request_logs" edge to the RequestLog entity.
+func (m *GroupMutation) ClearRequestLogs() {
+	m.clearedrequest_logs = true
+}
+
+// RequestLogsCleared reports if the "request_logs" edge to the RequestLog entity was cleared.
+func (m *GroupMutation) RequestLogsCleared() bool {
+	return m.clearedrequest_logs
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to the RequestLog entity by IDs.
+func (m *GroupMutation) RemoveRequestLogIDs(ids ...int64) {
+	if m.removedrequest_logs == nil {
+		m.removedrequest_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.request_logs, ids[i])
+		m.removedrequest_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequestLogs returns the removed IDs of the "request_logs" edge to the RequestLog entity.
+func (m *GroupMutation) RemovedRequestLogsIDs() (ids []int64) {
+	for id := range m.removedrequest_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequestLogsIDs returns the "request_logs" edge IDs in the mutation.
+func (m *GroupMutation) RequestLogsIDs() (ids []int64) {
+	for id := range m.request_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequestLogs resets all changes to the "request_logs" edge.
+func (m *GroupMutation) ResetRequestLogs() {
+	m.request_logs = nil
+	m.clearedrequest_logs = false
+	m.removedrequest_logs = nil
+}
+
 // AddAccountIDs adds the "accounts" edge to the Account entity by ids.
 func (m *GroupMutation) AddAccountIDs(ids ...int64) {
 	if m.accounts == nil {
@@ -6035,7 +6260,7 @@ func (m *GroupMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GroupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.api_keys != nil {
 		edges = append(edges, group.EdgeAPIKeys)
 	}
@@ -6047,6 +6272,9 @@ func (m *GroupMutation) AddedEdges() []string {
 	}
 	if m.usage_logs != nil {
 		edges = append(edges, group.EdgeUsageLogs)
+	}
+	if m.request_logs != nil {
+		edges = append(edges, group.EdgeRequestLogs)
 	}
 	if m.accounts != nil {
 		edges = append(edges, group.EdgeAccounts)
@@ -6085,6 +6313,12 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case group.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.request_logs))
+		for id := range m.request_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case group.EdgeAccounts:
 		ids := make([]ent.Value, 0, len(m.accounts))
 		for id := range m.accounts {
@@ -6103,7 +6337,7 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GroupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removedapi_keys != nil {
 		edges = append(edges, group.EdgeAPIKeys)
 	}
@@ -6115,6 +6349,9 @@ func (m *GroupMutation) RemovedEdges() []string {
 	}
 	if m.removedusage_logs != nil {
 		edges = append(edges, group.EdgeUsageLogs)
+	}
+	if m.removedrequest_logs != nil {
+		edges = append(edges, group.EdgeRequestLogs)
 	}
 	if m.removedaccounts != nil {
 		edges = append(edges, group.EdgeAccounts)
@@ -6153,6 +6390,12 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case group.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.removedrequest_logs))
+		for id := range m.removedrequest_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case group.EdgeAccounts:
 		ids := make([]ent.Value, 0, len(m.removedaccounts))
 		for id := range m.removedaccounts {
@@ -6171,7 +6414,7 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GroupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedapi_keys {
 		edges = append(edges, group.EdgeAPIKeys)
 	}
@@ -6183,6 +6426,9 @@ func (m *GroupMutation) ClearedEdges() []string {
 	}
 	if m.clearedusage_logs {
 		edges = append(edges, group.EdgeUsageLogs)
+	}
+	if m.clearedrequest_logs {
+		edges = append(edges, group.EdgeRequestLogs)
 	}
 	if m.clearedaccounts {
 		edges = append(edges, group.EdgeAccounts)
@@ -6205,6 +6451,8 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 		return m.clearedsubscriptions
 	case group.EdgeUsageLogs:
 		return m.clearedusage_logs
+	case group.EdgeRequestLogs:
+		return m.clearedrequest_logs
 	case group.EdgeAccounts:
 		return m.clearedaccounts
 	case group.EdgeAllowedUsers:
@@ -6236,6 +6484,9 @@ func (m *GroupMutation) ResetEdge(name string) error {
 		return nil
 	case group.EdgeUsageLogs:
 		m.ResetUsageLogs()
+		return nil
+	case group.EdgeRequestLogs:
+		m.ResetRequestLogs()
 		return nil
 	case group.EdgeAccounts:
 		m.ResetAccounts()
@@ -9937,6 +10188,1702 @@ func (m *RedeemCodeMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown RedeemCode edge %s", name)
+}
+
+// RequestLogMutation represents an operation that mutates the RequestLog nodes in the graph.
+type RequestLogMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int64
+	request_id         *string
+	model              *string
+	request_body       *string
+	request_method     *string
+	request_path       *string
+	response_body      *string
+	response_status    *int
+	addresponse_status *int
+	stream             *bool
+	duration_ms        *int
+	addduration_ms     *int
+	ip_address         *string
+	user_agent         *string
+	is_error           *bool
+	error_message      *string
+	error_type         *string
+	created_at         *time.Time
+	clearedFields      map[string]struct{}
+	user               *int64
+	cleareduser        bool
+	api_key            *int64
+	clearedapi_key     bool
+	account            *int64
+	clearedaccount     bool
+	group              *int64
+	clearedgroup       bool
+	done               bool
+	oldValue           func(context.Context) (*RequestLog, error)
+	predicates         []predicate.RequestLog
+}
+
+var _ ent.Mutation = (*RequestLogMutation)(nil)
+
+// requestlogOption allows management of the mutation configuration using functional options.
+type requestlogOption func(*RequestLogMutation)
+
+// newRequestLogMutation creates new mutation for the RequestLog entity.
+func newRequestLogMutation(c config, op Op, opts ...requestlogOption) *RequestLogMutation {
+	m := &RequestLogMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeRequestLog,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withRequestLogID sets the ID field of the mutation.
+func withRequestLogID(id int64) requestlogOption {
+	return func(m *RequestLogMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *RequestLog
+		)
+		m.oldValue = func(ctx context.Context) (*RequestLog, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().RequestLog.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withRequestLog sets the old RequestLog of the mutation.
+func withRequestLog(node *RequestLog) requestlogOption {
+	return func(m *RequestLogMutation) {
+		m.oldValue = func(context.Context) (*RequestLog, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m RequestLogMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m RequestLogMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *RequestLogMutation) ID() (id int64, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *RequestLogMutation) IDs(ctx context.Context) ([]int64, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int64{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().RequestLog.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUserID sets the "user_id" field.
+func (m *RequestLogMutation) SetUserID(i int64) {
+	m.user = &i
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RequestLogMutation) UserID() (r int64, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldUserID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RequestLogMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetAPIKeyID sets the "api_key_id" field.
+func (m *RequestLogMutation) SetAPIKeyID(i int64) {
+	m.api_key = &i
+}
+
+// APIKeyID returns the value of the "api_key_id" field in the mutation.
+func (m *RequestLogMutation) APIKeyID() (r int64, exists bool) {
+	v := m.api_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAPIKeyID returns the old "api_key_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldAPIKeyID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAPIKeyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAPIKeyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAPIKeyID: %w", err)
+	}
+	return oldValue.APIKeyID, nil
+}
+
+// ResetAPIKeyID resets all changes to the "api_key_id" field.
+func (m *RequestLogMutation) ResetAPIKeyID() {
+	m.api_key = nil
+}
+
+// SetAccountID sets the "account_id" field.
+func (m *RequestLogMutation) SetAccountID(i int64) {
+	m.account = &i
+}
+
+// AccountID returns the value of the "account_id" field in the mutation.
+func (m *RequestLogMutation) AccountID() (r int64, exists bool) {
+	v := m.account
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccountID returns the old "account_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldAccountID(ctx context.Context) (v int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccountID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccountID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccountID: %w", err)
+	}
+	return oldValue.AccountID, nil
+}
+
+// ResetAccountID resets all changes to the "account_id" field.
+func (m *RequestLogMutation) ResetAccountID() {
+	m.account = nil
+}
+
+// SetRequestID sets the "request_id" field.
+func (m *RequestLogMutation) SetRequestID(s string) {
+	m.request_id = &s
+}
+
+// RequestID returns the value of the "request_id" field in the mutation.
+func (m *RequestLogMutation) RequestID() (r string, exists bool) {
+	v := m.request_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestID returns the old "request_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldRequestID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestID: %w", err)
+	}
+	return oldValue.RequestID, nil
+}
+
+// ResetRequestID resets all changes to the "request_id" field.
+func (m *RequestLogMutation) ResetRequestID() {
+	m.request_id = nil
+}
+
+// SetModel sets the "model" field.
+func (m *RequestLogMutation) SetModel(s string) {
+	m.model = &s
+}
+
+// Model returns the value of the "model" field in the mutation.
+func (m *RequestLogMutation) Model() (r string, exists bool) {
+	v := m.model
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldModel returns the old "model" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldModel(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldModel is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldModel requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldModel: %w", err)
+	}
+	return oldValue.Model, nil
+}
+
+// ResetModel resets all changes to the "model" field.
+func (m *RequestLogMutation) ResetModel() {
+	m.model = nil
+}
+
+// SetGroupID sets the "group_id" field.
+func (m *RequestLogMutation) SetGroupID(i int64) {
+	m.group = &i
+}
+
+// GroupID returns the value of the "group_id" field in the mutation.
+func (m *RequestLogMutation) GroupID() (r int64, exists bool) {
+	v := m.group
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGroupID returns the old "group_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldGroupID(ctx context.Context) (v *int64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGroupID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGroupID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGroupID: %w", err)
+	}
+	return oldValue.GroupID, nil
+}
+
+// ClearGroupID clears the value of the "group_id" field.
+func (m *RequestLogMutation) ClearGroupID() {
+	m.group = nil
+	m.clearedFields[requestlog.FieldGroupID] = struct{}{}
+}
+
+// GroupIDCleared returns if the "group_id" field was cleared in this mutation.
+func (m *RequestLogMutation) GroupIDCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldGroupID]
+	return ok
+}
+
+// ResetGroupID resets all changes to the "group_id" field.
+func (m *RequestLogMutation) ResetGroupID() {
+	m.group = nil
+	delete(m.clearedFields, requestlog.FieldGroupID)
+}
+
+// SetRequestBody sets the "request_body" field.
+func (m *RequestLogMutation) SetRequestBody(s string) {
+	m.request_body = &s
+}
+
+// RequestBody returns the value of the "request_body" field in the mutation.
+func (m *RequestLogMutation) RequestBody() (r string, exists bool) {
+	v := m.request_body
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestBody returns the old "request_body" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldRequestBody(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestBody is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestBody requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestBody: %w", err)
+	}
+	return oldValue.RequestBody, nil
+}
+
+// ResetRequestBody resets all changes to the "request_body" field.
+func (m *RequestLogMutation) ResetRequestBody() {
+	m.request_body = nil
+}
+
+// SetRequestMethod sets the "request_method" field.
+func (m *RequestLogMutation) SetRequestMethod(s string) {
+	m.request_method = &s
+}
+
+// RequestMethod returns the value of the "request_method" field in the mutation.
+func (m *RequestLogMutation) RequestMethod() (r string, exists bool) {
+	v := m.request_method
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestMethod returns the old "request_method" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldRequestMethod(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestMethod is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestMethod requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestMethod: %w", err)
+	}
+	return oldValue.RequestMethod, nil
+}
+
+// ResetRequestMethod resets all changes to the "request_method" field.
+func (m *RequestLogMutation) ResetRequestMethod() {
+	m.request_method = nil
+}
+
+// SetRequestPath sets the "request_path" field.
+func (m *RequestLogMutation) SetRequestPath(s string) {
+	m.request_path = &s
+}
+
+// RequestPath returns the value of the "request_path" field in the mutation.
+func (m *RequestLogMutation) RequestPath() (r string, exists bool) {
+	v := m.request_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRequestPath returns the old "request_path" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldRequestPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRequestPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRequestPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRequestPath: %w", err)
+	}
+	return oldValue.RequestPath, nil
+}
+
+// ResetRequestPath resets all changes to the "request_path" field.
+func (m *RequestLogMutation) ResetRequestPath() {
+	m.request_path = nil
+}
+
+// SetResponseBody sets the "response_body" field.
+func (m *RequestLogMutation) SetResponseBody(s string) {
+	m.response_body = &s
+}
+
+// ResponseBody returns the value of the "response_body" field in the mutation.
+func (m *RequestLogMutation) ResponseBody() (r string, exists bool) {
+	v := m.response_body
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseBody returns the old "response_body" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldResponseBody(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseBody is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseBody requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseBody: %w", err)
+	}
+	return oldValue.ResponseBody, nil
+}
+
+// ClearResponseBody clears the value of the "response_body" field.
+func (m *RequestLogMutation) ClearResponseBody() {
+	m.response_body = nil
+	m.clearedFields[requestlog.FieldResponseBody] = struct{}{}
+}
+
+// ResponseBodyCleared returns if the "response_body" field was cleared in this mutation.
+func (m *RequestLogMutation) ResponseBodyCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldResponseBody]
+	return ok
+}
+
+// ResetResponseBody resets all changes to the "response_body" field.
+func (m *RequestLogMutation) ResetResponseBody() {
+	m.response_body = nil
+	delete(m.clearedFields, requestlog.FieldResponseBody)
+}
+
+// SetResponseStatus sets the "response_status" field.
+func (m *RequestLogMutation) SetResponseStatus(i int) {
+	m.response_status = &i
+	m.addresponse_status = nil
+}
+
+// ResponseStatus returns the value of the "response_status" field in the mutation.
+func (m *RequestLogMutation) ResponseStatus() (r int, exists bool) {
+	v := m.response_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseStatus returns the old "response_status" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldResponseStatus(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseStatus: %w", err)
+	}
+	return oldValue.ResponseStatus, nil
+}
+
+// AddResponseStatus adds i to the "response_status" field.
+func (m *RequestLogMutation) AddResponseStatus(i int) {
+	if m.addresponse_status != nil {
+		*m.addresponse_status += i
+	} else {
+		m.addresponse_status = &i
+	}
+}
+
+// AddedResponseStatus returns the value that was added to the "response_status" field in this mutation.
+func (m *RequestLogMutation) AddedResponseStatus() (r int, exists bool) {
+	v := m.addresponse_status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetResponseStatus resets all changes to the "response_status" field.
+func (m *RequestLogMutation) ResetResponseStatus() {
+	m.response_status = nil
+	m.addresponse_status = nil
+}
+
+// SetStream sets the "stream" field.
+func (m *RequestLogMutation) SetStream(b bool) {
+	m.stream = &b
+}
+
+// Stream returns the value of the "stream" field in the mutation.
+func (m *RequestLogMutation) Stream() (r bool, exists bool) {
+	v := m.stream
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStream returns the old "stream" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldStream(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStream is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStream requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStream: %w", err)
+	}
+	return oldValue.Stream, nil
+}
+
+// ResetStream resets all changes to the "stream" field.
+func (m *RequestLogMutation) ResetStream() {
+	m.stream = nil
+}
+
+// SetDurationMs sets the "duration_ms" field.
+func (m *RequestLogMutation) SetDurationMs(i int) {
+	m.duration_ms = &i
+	m.addduration_ms = nil
+}
+
+// DurationMs returns the value of the "duration_ms" field in the mutation.
+func (m *RequestLogMutation) DurationMs() (r int, exists bool) {
+	v := m.duration_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDurationMs returns the old "duration_ms" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldDurationMs(ctx context.Context) (v *int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDurationMs is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDurationMs requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDurationMs: %w", err)
+	}
+	return oldValue.DurationMs, nil
+}
+
+// AddDurationMs adds i to the "duration_ms" field.
+func (m *RequestLogMutation) AddDurationMs(i int) {
+	if m.addduration_ms != nil {
+		*m.addduration_ms += i
+	} else {
+		m.addduration_ms = &i
+	}
+}
+
+// AddedDurationMs returns the value that was added to the "duration_ms" field in this mutation.
+func (m *RequestLogMutation) AddedDurationMs() (r int, exists bool) {
+	v := m.addduration_ms
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDurationMs clears the value of the "duration_ms" field.
+func (m *RequestLogMutation) ClearDurationMs() {
+	m.duration_ms = nil
+	m.addduration_ms = nil
+	m.clearedFields[requestlog.FieldDurationMs] = struct{}{}
+}
+
+// DurationMsCleared returns if the "duration_ms" field was cleared in this mutation.
+func (m *RequestLogMutation) DurationMsCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldDurationMs]
+	return ok
+}
+
+// ResetDurationMs resets all changes to the "duration_ms" field.
+func (m *RequestLogMutation) ResetDurationMs() {
+	m.duration_ms = nil
+	m.addduration_ms = nil
+	delete(m.clearedFields, requestlog.FieldDurationMs)
+}
+
+// SetIPAddress sets the "ip_address" field.
+func (m *RequestLogMutation) SetIPAddress(s string) {
+	m.ip_address = &s
+}
+
+// IPAddress returns the value of the "ip_address" field in the mutation.
+func (m *RequestLogMutation) IPAddress() (r string, exists bool) {
+	v := m.ip_address
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIPAddress returns the old "ip_address" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldIPAddress(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIPAddress is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIPAddress requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIPAddress: %w", err)
+	}
+	return oldValue.IPAddress, nil
+}
+
+// ClearIPAddress clears the value of the "ip_address" field.
+func (m *RequestLogMutation) ClearIPAddress() {
+	m.ip_address = nil
+	m.clearedFields[requestlog.FieldIPAddress] = struct{}{}
+}
+
+// IPAddressCleared returns if the "ip_address" field was cleared in this mutation.
+func (m *RequestLogMutation) IPAddressCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldIPAddress]
+	return ok
+}
+
+// ResetIPAddress resets all changes to the "ip_address" field.
+func (m *RequestLogMutation) ResetIPAddress() {
+	m.ip_address = nil
+	delete(m.clearedFields, requestlog.FieldIPAddress)
+}
+
+// SetUserAgent sets the "user_agent" field.
+func (m *RequestLogMutation) SetUserAgent(s string) {
+	m.user_agent = &s
+}
+
+// UserAgent returns the value of the "user_agent" field in the mutation.
+func (m *RequestLogMutation) UserAgent() (r string, exists bool) {
+	v := m.user_agent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserAgent returns the old "user_agent" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldUserAgent(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserAgent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserAgent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserAgent: %w", err)
+	}
+	return oldValue.UserAgent, nil
+}
+
+// ClearUserAgent clears the value of the "user_agent" field.
+func (m *RequestLogMutation) ClearUserAgent() {
+	m.user_agent = nil
+	m.clearedFields[requestlog.FieldUserAgent] = struct{}{}
+}
+
+// UserAgentCleared returns if the "user_agent" field was cleared in this mutation.
+func (m *RequestLogMutation) UserAgentCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldUserAgent]
+	return ok
+}
+
+// ResetUserAgent resets all changes to the "user_agent" field.
+func (m *RequestLogMutation) ResetUserAgent() {
+	m.user_agent = nil
+	delete(m.clearedFields, requestlog.FieldUserAgent)
+}
+
+// SetIsError sets the "is_error" field.
+func (m *RequestLogMutation) SetIsError(b bool) {
+	m.is_error = &b
+}
+
+// IsError returns the value of the "is_error" field in the mutation.
+func (m *RequestLogMutation) IsError() (r bool, exists bool) {
+	v := m.is_error
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsError returns the old "is_error" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldIsError(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsError is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsError requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsError: %w", err)
+	}
+	return oldValue.IsError, nil
+}
+
+// ResetIsError resets all changes to the "is_error" field.
+func (m *RequestLogMutation) ResetIsError() {
+	m.is_error = nil
+}
+
+// SetErrorMessage sets the "error_message" field.
+func (m *RequestLogMutation) SetErrorMessage(s string) {
+	m.error_message = &s
+}
+
+// ErrorMessage returns the value of the "error_message" field in the mutation.
+func (m *RequestLogMutation) ErrorMessage() (r string, exists bool) {
+	v := m.error_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldErrorMessage returns the old "error_message" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldErrorMessage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldErrorMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldErrorMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldErrorMessage: %w", err)
+	}
+	return oldValue.ErrorMessage, nil
+}
+
+// ClearErrorMessage clears the value of the "error_message" field.
+func (m *RequestLogMutation) ClearErrorMessage() {
+	m.error_message = nil
+	m.clearedFields[requestlog.FieldErrorMessage] = struct{}{}
+}
+
+// ErrorMessageCleared returns if the "error_message" field was cleared in this mutation.
+func (m *RequestLogMutation) ErrorMessageCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldErrorMessage]
+	return ok
+}
+
+// ResetErrorMessage resets all changes to the "error_message" field.
+func (m *RequestLogMutation) ResetErrorMessage() {
+	m.error_message = nil
+	delete(m.clearedFields, requestlog.FieldErrorMessage)
+}
+
+// SetErrorType sets the "error_type" field.
+func (m *RequestLogMutation) SetErrorType(s string) {
+	m.error_type = &s
+}
+
+// ErrorType returns the value of the "error_type" field in the mutation.
+func (m *RequestLogMutation) ErrorType() (r string, exists bool) {
+	v := m.error_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldErrorType returns the old "error_type" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldErrorType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldErrorType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldErrorType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldErrorType: %w", err)
+	}
+	return oldValue.ErrorType, nil
+}
+
+// ClearErrorType clears the value of the "error_type" field.
+func (m *RequestLogMutation) ClearErrorType() {
+	m.error_type = nil
+	m.clearedFields[requestlog.FieldErrorType] = struct{}{}
+}
+
+// ErrorTypeCleared returns if the "error_type" field was cleared in this mutation.
+func (m *RequestLogMutation) ErrorTypeCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldErrorType]
+	return ok
+}
+
+// ResetErrorType resets all changes to the "error_type" field.
+func (m *RequestLogMutation) ResetErrorType() {
+	m.error_type = nil
+	delete(m.clearedFields, requestlog.FieldErrorType)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *RequestLogMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *RequestLogMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *RequestLogMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *RequestLogMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[requestlog.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *RequestLogMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *RequestLogMutation) UserIDs() (ids []int64) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *RequestLogMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearAPIKey clears the "api_key" edge to the APIKey entity.
+func (m *RequestLogMutation) ClearAPIKey() {
+	m.clearedapi_key = true
+	m.clearedFields[requestlog.FieldAPIKeyID] = struct{}{}
+}
+
+// APIKeyCleared reports if the "api_key" edge to the APIKey entity was cleared.
+func (m *RequestLogMutation) APIKeyCleared() bool {
+	return m.clearedapi_key
+}
+
+// APIKeyIDs returns the "api_key" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// APIKeyID instead. It exists only for internal usage by the builders.
+func (m *RequestLogMutation) APIKeyIDs() (ids []int64) {
+	if id := m.api_key; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAPIKey resets all changes to the "api_key" edge.
+func (m *RequestLogMutation) ResetAPIKey() {
+	m.api_key = nil
+	m.clearedapi_key = false
+}
+
+// ClearAccount clears the "account" edge to the Account entity.
+func (m *RequestLogMutation) ClearAccount() {
+	m.clearedaccount = true
+	m.clearedFields[requestlog.FieldAccountID] = struct{}{}
+}
+
+// AccountCleared reports if the "account" edge to the Account entity was cleared.
+func (m *RequestLogMutation) AccountCleared() bool {
+	return m.clearedaccount
+}
+
+// AccountIDs returns the "account" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AccountID instead. It exists only for internal usage by the builders.
+func (m *RequestLogMutation) AccountIDs() (ids []int64) {
+	if id := m.account; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAccount resets all changes to the "account" edge.
+func (m *RequestLogMutation) ResetAccount() {
+	m.account = nil
+	m.clearedaccount = false
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (m *RequestLogMutation) ClearGroup() {
+	m.clearedgroup = true
+	m.clearedFields[requestlog.FieldGroupID] = struct{}{}
+}
+
+// GroupCleared reports if the "group" edge to the Group entity was cleared.
+func (m *RequestLogMutation) GroupCleared() bool {
+	return m.GroupIDCleared() || m.clearedgroup
+}
+
+// GroupIDs returns the "group" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GroupID instead. It exists only for internal usage by the builders.
+func (m *RequestLogMutation) GroupIDs() (ids []int64) {
+	if id := m.group; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGroup resets all changes to the "group" edge.
+func (m *RequestLogMutation) ResetGroup() {
+	m.group = nil
+	m.clearedgroup = false
+}
+
+// Where appends a list predicates to the RequestLogMutation builder.
+func (m *RequestLogMutation) Where(ps ...predicate.RequestLog) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the RequestLogMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *RequestLogMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RequestLog, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *RequestLogMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *RequestLogMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (RequestLog).
+func (m *RequestLogMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *RequestLogMutation) Fields() []string {
+	fields := make([]string, 0, 19)
+	if m.user != nil {
+		fields = append(fields, requestlog.FieldUserID)
+	}
+	if m.api_key != nil {
+		fields = append(fields, requestlog.FieldAPIKeyID)
+	}
+	if m.account != nil {
+		fields = append(fields, requestlog.FieldAccountID)
+	}
+	if m.request_id != nil {
+		fields = append(fields, requestlog.FieldRequestID)
+	}
+	if m.model != nil {
+		fields = append(fields, requestlog.FieldModel)
+	}
+	if m.group != nil {
+		fields = append(fields, requestlog.FieldGroupID)
+	}
+	if m.request_body != nil {
+		fields = append(fields, requestlog.FieldRequestBody)
+	}
+	if m.request_method != nil {
+		fields = append(fields, requestlog.FieldRequestMethod)
+	}
+	if m.request_path != nil {
+		fields = append(fields, requestlog.FieldRequestPath)
+	}
+	if m.response_body != nil {
+		fields = append(fields, requestlog.FieldResponseBody)
+	}
+	if m.response_status != nil {
+		fields = append(fields, requestlog.FieldResponseStatus)
+	}
+	if m.stream != nil {
+		fields = append(fields, requestlog.FieldStream)
+	}
+	if m.duration_ms != nil {
+		fields = append(fields, requestlog.FieldDurationMs)
+	}
+	if m.ip_address != nil {
+		fields = append(fields, requestlog.FieldIPAddress)
+	}
+	if m.user_agent != nil {
+		fields = append(fields, requestlog.FieldUserAgent)
+	}
+	if m.is_error != nil {
+		fields = append(fields, requestlog.FieldIsError)
+	}
+	if m.error_message != nil {
+		fields = append(fields, requestlog.FieldErrorMessage)
+	}
+	if m.error_type != nil {
+		fields = append(fields, requestlog.FieldErrorType)
+	}
+	if m.created_at != nil {
+		fields = append(fields, requestlog.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *RequestLogMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case requestlog.FieldUserID:
+		return m.UserID()
+	case requestlog.FieldAPIKeyID:
+		return m.APIKeyID()
+	case requestlog.FieldAccountID:
+		return m.AccountID()
+	case requestlog.FieldRequestID:
+		return m.RequestID()
+	case requestlog.FieldModel:
+		return m.Model()
+	case requestlog.FieldGroupID:
+		return m.GroupID()
+	case requestlog.FieldRequestBody:
+		return m.RequestBody()
+	case requestlog.FieldRequestMethod:
+		return m.RequestMethod()
+	case requestlog.FieldRequestPath:
+		return m.RequestPath()
+	case requestlog.FieldResponseBody:
+		return m.ResponseBody()
+	case requestlog.FieldResponseStatus:
+		return m.ResponseStatus()
+	case requestlog.FieldStream:
+		return m.Stream()
+	case requestlog.FieldDurationMs:
+		return m.DurationMs()
+	case requestlog.FieldIPAddress:
+		return m.IPAddress()
+	case requestlog.FieldUserAgent:
+		return m.UserAgent()
+	case requestlog.FieldIsError:
+		return m.IsError()
+	case requestlog.FieldErrorMessage:
+		return m.ErrorMessage()
+	case requestlog.FieldErrorType:
+		return m.ErrorType()
+	case requestlog.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *RequestLogMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case requestlog.FieldUserID:
+		return m.OldUserID(ctx)
+	case requestlog.FieldAPIKeyID:
+		return m.OldAPIKeyID(ctx)
+	case requestlog.FieldAccountID:
+		return m.OldAccountID(ctx)
+	case requestlog.FieldRequestID:
+		return m.OldRequestID(ctx)
+	case requestlog.FieldModel:
+		return m.OldModel(ctx)
+	case requestlog.FieldGroupID:
+		return m.OldGroupID(ctx)
+	case requestlog.FieldRequestBody:
+		return m.OldRequestBody(ctx)
+	case requestlog.FieldRequestMethod:
+		return m.OldRequestMethod(ctx)
+	case requestlog.FieldRequestPath:
+		return m.OldRequestPath(ctx)
+	case requestlog.FieldResponseBody:
+		return m.OldResponseBody(ctx)
+	case requestlog.FieldResponseStatus:
+		return m.OldResponseStatus(ctx)
+	case requestlog.FieldStream:
+		return m.OldStream(ctx)
+	case requestlog.FieldDurationMs:
+		return m.OldDurationMs(ctx)
+	case requestlog.FieldIPAddress:
+		return m.OldIPAddress(ctx)
+	case requestlog.FieldUserAgent:
+		return m.OldUserAgent(ctx)
+	case requestlog.FieldIsError:
+		return m.OldIsError(ctx)
+	case requestlog.FieldErrorMessage:
+		return m.OldErrorMessage(ctx)
+	case requestlog.FieldErrorType:
+		return m.OldErrorType(ctx)
+	case requestlog.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown RequestLog field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RequestLogMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case requestlog.FieldUserID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case requestlog.FieldAPIKeyID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAPIKeyID(v)
+		return nil
+	case requestlog.FieldAccountID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccountID(v)
+		return nil
+	case requestlog.FieldRequestID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestID(v)
+		return nil
+	case requestlog.FieldModel:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetModel(v)
+		return nil
+	case requestlog.FieldGroupID:
+		v, ok := value.(int64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGroupID(v)
+		return nil
+	case requestlog.FieldRequestBody:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestBody(v)
+		return nil
+	case requestlog.FieldRequestMethod:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestMethod(v)
+		return nil
+	case requestlog.FieldRequestPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRequestPath(v)
+		return nil
+	case requestlog.FieldResponseBody:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseBody(v)
+		return nil
+	case requestlog.FieldResponseStatus:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseStatus(v)
+		return nil
+	case requestlog.FieldStream:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStream(v)
+		return nil
+	case requestlog.FieldDurationMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDurationMs(v)
+		return nil
+	case requestlog.FieldIPAddress:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIPAddress(v)
+		return nil
+	case requestlog.FieldUserAgent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserAgent(v)
+		return nil
+	case requestlog.FieldIsError:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsError(v)
+		return nil
+	case requestlog.FieldErrorMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetErrorMessage(v)
+		return nil
+	case requestlog.FieldErrorType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetErrorType(v)
+		return nil
+	case requestlog.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *RequestLogMutation) AddedFields() []string {
+	var fields []string
+	if m.addresponse_status != nil {
+		fields = append(fields, requestlog.FieldResponseStatus)
+	}
+	if m.addduration_ms != nil {
+		fields = append(fields, requestlog.FieldDurationMs)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *RequestLogMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case requestlog.FieldResponseStatus:
+		return m.AddedResponseStatus()
+	case requestlog.FieldDurationMs:
+		return m.AddedDurationMs()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *RequestLogMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case requestlog.FieldResponseStatus:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddResponseStatus(v)
+		return nil
+	case requestlog.FieldDurationMs:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDurationMs(v)
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *RequestLogMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(requestlog.FieldGroupID) {
+		fields = append(fields, requestlog.FieldGroupID)
+	}
+	if m.FieldCleared(requestlog.FieldResponseBody) {
+		fields = append(fields, requestlog.FieldResponseBody)
+	}
+	if m.FieldCleared(requestlog.FieldDurationMs) {
+		fields = append(fields, requestlog.FieldDurationMs)
+	}
+	if m.FieldCleared(requestlog.FieldIPAddress) {
+		fields = append(fields, requestlog.FieldIPAddress)
+	}
+	if m.FieldCleared(requestlog.FieldUserAgent) {
+		fields = append(fields, requestlog.FieldUserAgent)
+	}
+	if m.FieldCleared(requestlog.FieldErrorMessage) {
+		fields = append(fields, requestlog.FieldErrorMessage)
+	}
+	if m.FieldCleared(requestlog.FieldErrorType) {
+		fields = append(fields, requestlog.FieldErrorType)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *RequestLogMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *RequestLogMutation) ClearField(name string) error {
+	switch name {
+	case requestlog.FieldGroupID:
+		m.ClearGroupID()
+		return nil
+	case requestlog.FieldResponseBody:
+		m.ClearResponseBody()
+		return nil
+	case requestlog.FieldDurationMs:
+		m.ClearDurationMs()
+		return nil
+	case requestlog.FieldIPAddress:
+		m.ClearIPAddress()
+		return nil
+	case requestlog.FieldUserAgent:
+		m.ClearUserAgent()
+		return nil
+	case requestlog.FieldErrorMessage:
+		m.ClearErrorMessage()
+		return nil
+	case requestlog.FieldErrorType:
+		m.ClearErrorType()
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *RequestLogMutation) ResetField(name string) error {
+	switch name {
+	case requestlog.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case requestlog.FieldAPIKeyID:
+		m.ResetAPIKeyID()
+		return nil
+	case requestlog.FieldAccountID:
+		m.ResetAccountID()
+		return nil
+	case requestlog.FieldRequestID:
+		m.ResetRequestID()
+		return nil
+	case requestlog.FieldModel:
+		m.ResetModel()
+		return nil
+	case requestlog.FieldGroupID:
+		m.ResetGroupID()
+		return nil
+	case requestlog.FieldRequestBody:
+		m.ResetRequestBody()
+		return nil
+	case requestlog.FieldRequestMethod:
+		m.ResetRequestMethod()
+		return nil
+	case requestlog.FieldRequestPath:
+		m.ResetRequestPath()
+		return nil
+	case requestlog.FieldResponseBody:
+		m.ResetResponseBody()
+		return nil
+	case requestlog.FieldResponseStatus:
+		m.ResetResponseStatus()
+		return nil
+	case requestlog.FieldStream:
+		m.ResetStream()
+		return nil
+	case requestlog.FieldDurationMs:
+		m.ResetDurationMs()
+		return nil
+	case requestlog.FieldIPAddress:
+		m.ResetIPAddress()
+		return nil
+	case requestlog.FieldUserAgent:
+		m.ResetUserAgent()
+		return nil
+	case requestlog.FieldIsError:
+		m.ResetIsError()
+		return nil
+	case requestlog.FieldErrorMessage:
+		m.ResetErrorMessage()
+		return nil
+	case requestlog.FieldErrorType:
+		m.ResetErrorType()
+		return nil
+	case requestlog.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *RequestLogMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.user != nil {
+		edges = append(edges, requestlog.EdgeUser)
+	}
+	if m.api_key != nil {
+		edges = append(edges, requestlog.EdgeAPIKey)
+	}
+	if m.account != nil {
+		edges = append(edges, requestlog.EdgeAccount)
+	}
+	if m.group != nil {
+		edges = append(edges, requestlog.EdgeGroup)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *RequestLogMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case requestlog.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case requestlog.EdgeAPIKey:
+		if id := m.api_key; id != nil {
+			return []ent.Value{*id}
+		}
+	case requestlog.EdgeAccount:
+		if id := m.account; id != nil {
+			return []ent.Value{*id}
+		}
+	case requestlog.EdgeGroup:
+		if id := m.group; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *RequestLogMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *RequestLogMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *RequestLogMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.cleareduser {
+		edges = append(edges, requestlog.EdgeUser)
+	}
+	if m.clearedapi_key {
+		edges = append(edges, requestlog.EdgeAPIKey)
+	}
+	if m.clearedaccount {
+		edges = append(edges, requestlog.EdgeAccount)
+	}
+	if m.clearedgroup {
+		edges = append(edges, requestlog.EdgeGroup)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *RequestLogMutation) EdgeCleared(name string) bool {
+	switch name {
+	case requestlog.EdgeUser:
+		return m.cleareduser
+	case requestlog.EdgeAPIKey:
+		return m.clearedapi_key
+	case requestlog.EdgeAccount:
+		return m.clearedaccount
+	case requestlog.EdgeGroup:
+		return m.clearedgroup
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *RequestLogMutation) ClearEdge(name string) error {
+	switch name {
+	case requestlog.EdgeUser:
+		m.ClearUser()
+		return nil
+	case requestlog.EdgeAPIKey:
+		m.ClearAPIKey()
+		return nil
+	case requestlog.EdgeAccount:
+		m.ClearAccount()
+		return nil
+	case requestlog.EdgeGroup:
+		m.ClearGroup()
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *RequestLogMutation) ResetEdge(name string) error {
+	switch name {
+	case requestlog.EdgeUser:
+		m.ResetUser()
+		return nil
+	case requestlog.EdgeAPIKey:
+		m.ResetAPIKey()
+		return nil
+	case requestlog.EdgeAccount:
+		m.ResetAccount()
+		return nil
+	case requestlog.EdgeGroup:
+		m.ResetGroup()
+		return nil
+	}
+	return fmt.Errorf("unknown RequestLog edge %s", name)
 }
 
 // SettingMutation represents an operation that mutates the Setting nodes in the graph.
@@ -14382,6 +16329,9 @@ type UserMutation struct {
 	usage_logs                    map[int64]struct{}
 	removedusage_logs             map[int64]struct{}
 	clearedusage_logs             bool
+	request_logs                  map[int64]struct{}
+	removedrequest_logs           map[int64]struct{}
+	clearedrequest_logs           bool
 	attribute_values              map[int64]struct{}
 	removedattribute_values       map[int64]struct{}
 	clearedattribute_values       bool
@@ -15398,6 +17348,60 @@ func (m *UserMutation) ResetUsageLogs() {
 	m.removedusage_logs = nil
 }
 
+// AddRequestLogIDs adds the "request_logs" edge to the RequestLog entity by ids.
+func (m *UserMutation) AddRequestLogIDs(ids ...int64) {
+	if m.request_logs == nil {
+		m.request_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.request_logs[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRequestLogs clears the "request_logs" edge to the RequestLog entity.
+func (m *UserMutation) ClearRequestLogs() {
+	m.clearedrequest_logs = true
+}
+
+// RequestLogsCleared reports if the "request_logs" edge to the RequestLog entity was cleared.
+func (m *UserMutation) RequestLogsCleared() bool {
+	return m.clearedrequest_logs
+}
+
+// RemoveRequestLogIDs removes the "request_logs" edge to the RequestLog entity by IDs.
+func (m *UserMutation) RemoveRequestLogIDs(ids ...int64) {
+	if m.removedrequest_logs == nil {
+		m.removedrequest_logs = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.request_logs, ids[i])
+		m.removedrequest_logs[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRequestLogs returns the removed IDs of the "request_logs" edge to the RequestLog entity.
+func (m *UserMutation) RemovedRequestLogsIDs() (ids []int64) {
+	for id := range m.removedrequest_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RequestLogsIDs returns the "request_logs" edge IDs in the mutation.
+func (m *UserMutation) RequestLogsIDs() (ids []int64) {
+	for id := range m.request_logs {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRequestLogs resets all changes to the "request_logs" edge.
+func (m *UserMutation) ResetRequestLogs() {
+	m.request_logs = nil
+	m.clearedrequest_logs = false
+	m.removedrequest_logs = nil
+}
+
 // AddAttributeValueIDs adds the "attribute_values" edge to the UserAttributeValue entity by ids.
 func (m *UserMutation) AddAttributeValueIDs(ids ...int64) {
 	if m.attribute_values == nil {
@@ -15908,7 +17912,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.api_keys != nil {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -15926,6 +17930,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.usage_logs != nil {
 		edges = append(edges, user.EdgeUsageLogs)
+	}
+	if m.request_logs != nil {
+		edges = append(edges, user.EdgeRequestLogs)
 	}
 	if m.attribute_values != nil {
 		edges = append(edges, user.EdgeAttributeValues)
@@ -15976,6 +17983,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.request_logs))
+		for id := range m.request_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeAttributeValues:
 		ids := make([]ent.Value, 0, len(m.attribute_values))
 		for id := range m.attribute_values {
@@ -15994,7 +18007,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.removedapi_keys != nil {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -16012,6 +18025,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedusage_logs != nil {
 		edges = append(edges, user.EdgeUsageLogs)
+	}
+	if m.removedrequest_logs != nil {
+		edges = append(edges, user.EdgeRequestLogs)
 	}
 	if m.removedattribute_values != nil {
 		edges = append(edges, user.EdgeAttributeValues)
@@ -16062,6 +18078,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeRequestLogs:
+		ids := make([]ent.Value, 0, len(m.removedrequest_logs))
+		for id := range m.removedrequest_logs {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeAttributeValues:
 		ids := make([]ent.Value, 0, len(m.removedattribute_values))
 		for id := range m.removedattribute_values {
@@ -16080,7 +18102,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
+	edges := make([]string, 0, 9)
 	if m.clearedapi_keys {
 		edges = append(edges, user.EdgeAPIKeys)
 	}
@@ -16098,6 +18120,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedusage_logs {
 		edges = append(edges, user.EdgeUsageLogs)
+	}
+	if m.clearedrequest_logs {
+		edges = append(edges, user.EdgeRequestLogs)
 	}
 	if m.clearedattribute_values {
 		edges = append(edges, user.EdgeAttributeValues)
@@ -16124,6 +18149,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedallowed_groups
 	case user.EdgeUsageLogs:
 		return m.clearedusage_logs
+	case user.EdgeRequestLogs:
+		return m.clearedrequest_logs
 	case user.EdgeAttributeValues:
 		return m.clearedattribute_values
 	case user.EdgePromoCodeUsages:
@@ -16161,6 +18188,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeUsageLogs:
 		m.ResetUsageLogs()
+		return nil
+	case user.EdgeRequestLogs:
+		m.ResetRequestLogs()
 		return nil
 	case user.EdgeAttributeValues:
 		m.ResetAttributeValues()

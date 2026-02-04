@@ -1,0 +1,28 @@
+server:
+    host: 0.0.0.0
+    port: 3000
+    mode: release
+database:
+    host: 192.168.52.111
+    port: 5432
+    user: postgres
+    password: 215o10
+    dbname: sub2api
+    sslmode: disable
+redis:
+    host: 192.168.52.111
+    port: 6379
+    password: 352x151
+    db: 0
+jwt:
+    secret: 17508a26527a027386b8591b2ee00548f4e89bc407effc2b2e2dcf1a79e4bac1
+    expire_hour: 24
+default:
+    user_concurrency: 5
+    user_balance: 0
+    api_key_prefix: sk-
+    rate_multiplier: 1
+rate_limit:
+    requests_per_minute: 60
+    burst_size: 10
+timezone: Asia/Shanghai
