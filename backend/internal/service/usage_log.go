@@ -8,12 +8,13 @@ const (
 )
 
 type UsageLog struct {
-	ID        int64
-	UserID    int64
-	APIKeyID  int64
-	AccountID int64
-	RequestID string
-	Model     string
+	ID              int64
+	UserID          int64
+	APIKeyID        int64
+	AccountID       int64
+	ClientRequestID string  // 内部请求ID，由网关生成
+	RequestID       *string // 上游API返回的请求ID（可能为空）
+	Model           string
 
 	GroupID        *int64
 	SubscriptionID *int64

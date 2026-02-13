@@ -27,8 +27,10 @@ type RequestLog struct {
 	APIKeyID int64 `json:"api_key_id,omitempty"`
 	// AccountID holds the value of the "account_id" field.
 	AccountID int64 `json:"account_id,omitempty"`
-	// 请求唯一ID，与usage_logs表关联
-	RequestID string `json:"request_id,omitempty"`
+	// 内部请求ID，由网关生成，用于关联 usage_logs 和 request_logs
+	ClientRequestID string `json:"client_request_id,omitempty"`
+	// 上游 API 返回的请求ID（x-request-id响应头，可能为空）
+	RequestID *string `json:"request_id,omitempty"`
 	// 模型名称
 	Model string `json:"model,omitempty"`
 	// 分组ID
@@ -133,7 +135,7 @@ func (*RequestLog) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case requestlog.FieldID, requestlog.FieldUserID, requestlog.FieldAPIKeyID, requestlog.FieldAccountID, requestlog.FieldGroupID, requestlog.FieldResponseStatus, requestlog.FieldDurationMs:
 			values[i] = new(sql.NullInt64)
-		case requestlog.FieldRequestID, requestlog.FieldModel, requestlog.FieldRequestBody, requestlog.FieldRequestMethod, requestlog.FieldRequestPath, requestlog.FieldResponseBody, requestlog.FieldIPAddress, requestlog.FieldUserAgent, requestlog.FieldErrorMessage, requestlog.FieldErrorType:
+		case requestlog.FieldClientRequestID, requestlog.FieldRequestID, requestlog.FieldModel, requestlog.FieldRequestBody, requestlog.FieldRequestMethod, requestlog.FieldRequestPath, requestlog.FieldResponseBody, requestlog.FieldIPAddress, requestlog.FieldUserAgent, requestlog.FieldErrorMessage, requestlog.FieldErrorType:
 			values[i] = new(sql.NullString)
 		case requestlog.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -176,11 +178,18 @@ func (_m *RequestLog) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AccountID = value.Int64
 			}
+		case requestlog.FieldClientRequestID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field client_request_id", values[i])
+			} else if value.Valid {
+				_m.ClientRequestID = value.String
+			}
 		case requestlog.FieldRequestID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field request_id", values[i])
 			} else if value.Valid {
-				_m.RequestID = value.String
+				_m.RequestID = new(string)
+				*_m.RequestID = value.String
 			}
 		case requestlog.FieldModel:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -344,8 +353,13 @@ func (_m *RequestLog) String() string {
 	builder.WriteString("account_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AccountID))
 	builder.WriteString(", ")
-	builder.WriteString("request_id=")
-	builder.WriteString(_m.RequestID)
+	builder.WriteString("client_request_id=")
+	builder.WriteString(_m.ClientRequestID)
+	builder.WriteString(", ")
+	if v := _m.RequestID; v != nil {
+		builder.WriteString("request_id=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("model=")
 	builder.WriteString(_m.Model)

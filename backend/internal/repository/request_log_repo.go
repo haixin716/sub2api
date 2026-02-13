@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	stdlog "log"
+	"strings"
 	"time"
 
 	dbent "github.com/Wei-Shaw/sub2api/ent"
@@ -31,6 +33,15 @@ func (r *requestLogRepository) Create(ctx context.Context, log *service.RequestL
 		return nil
 	}
 
+	// 验证 client_request_id 不能为空
+	if strings.TrimSpace(log.ClientRequestID) == "" {
+		stdlog.Printf("[ERROR] RequestLogRepo.Create: client_request_id is empty! UserID=%d, APIKeyID=%d", log.UserID, log.APIKeyID)
+		return fmt.Errorf("client_request_id is required")
+	}
+
+	stdlog.Printf("[DEBUG] RequestLogRepo.Create: Inserting with ClientRequestID='%s', UserID=%d, APIKeyID=%d, AccountID=%d",
+		log.ClientRequestID, log.UserID, log.APIKeyID, log.AccountID)
+
 	// 在事务上下文中，使用 tx 绑定的 ExecQuerier 执行原生 SQL
 	sqlq := r.sql
 	if tx := dbent.TxFromContext(ctx); tx != nil {
@@ -47,6 +58,7 @@ func (r *requestLogRepository) Create(ctx context.Context, log *service.RequestL
 			user_id,
 			api_key_id,
 			account_id,
+			client_request_id,
 			request_id,
 			model,
 			group_id,
@@ -63,13 +75,15 @@ func (r *requestLogRepository) Create(ctx context.Context, log *service.RequestL
 			error_message,
 			error_type,
 			created_at
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+		ON CONFLICT (client_request_id, api_key_id) DO NOTHING
 	`
 
 	args := []any{
 		log.UserID,
 		log.APIKeyID,
 		log.AccountID,
+		log.ClientRequestID,
 		log.RequestID,
 		log.Model,
 		log.GroupID,
@@ -90,9 +104,11 @@ func (r *requestLogRepository) Create(ctx context.Context, log *service.RequestL
 
 	_, err := sqlq.ExecContext(ctx, query, args...)
 	if err != nil {
+		stdlog.Printf("[ERROR] RequestLogRepo.Create: Failed to insert request log: %v", err)
 		return fmt.Errorf("failed to create request log: %w", err)
 	}
 
+	stdlog.Printf("[DEBUG] RequestLogRepo.Create: Successfully inserted request log with ClientRequestID='%s'", log.ClientRequestID)
 	return nil
 }
 
@@ -242,26 +258,27 @@ func mapRequestLogFromEnt(dbLog *dbent.RequestLog) *service.RequestLog {
 	}
 
 	log := &service.RequestLog{
-		ID:             dbLog.ID,
-		UserID:         dbLog.UserID,
-		APIKeyID:       dbLog.APIKeyID,
-		AccountID:      dbLog.AccountID,
-		RequestID:      dbLog.RequestID,
-		Model:          dbLog.Model,
-		GroupID:        dbLog.GroupID,
-		RequestBody:    dbLog.RequestBody,
-		RequestMethod:  dbLog.RequestMethod,
-		RequestPath:    dbLog.RequestPath,
-		ResponseBody:   dbLog.ResponseBody,
-		ResponseStatus: dbLog.ResponseStatus,
-		Stream:         dbLog.Stream,
-		DurationMs:     dbLog.DurationMs,
-		IPAddress:      dbLog.IPAddress,
-		UserAgent:      dbLog.UserAgent,
-		IsError:        dbLog.IsError,
-		ErrorMessage:   dbLog.ErrorMessage,
-		ErrorType:      dbLog.ErrorType,
-		CreatedAt:      dbLog.CreatedAt,
+		ID:              dbLog.ID,
+		UserID:          dbLog.UserID,
+		APIKeyID:        dbLog.APIKeyID,
+		AccountID:       dbLog.AccountID,
+		ClientRequestID: dbLog.ClientRequestID,
+		RequestID:       dbLog.RequestID,
+		Model:           dbLog.Model,
+		GroupID:         dbLog.GroupID,
+		RequestBody:     dbLog.RequestBody,
+		RequestMethod:   dbLog.RequestMethod,
+		RequestPath:     dbLog.RequestPath,
+		ResponseBody:    dbLog.ResponseBody,
+		ResponseStatus:  dbLog.ResponseStatus,
+		Stream:          dbLog.Stream,
+		DurationMs:      dbLog.DurationMs,
+		IPAddress:       dbLog.IPAddress,
+		UserAgent:       dbLog.UserAgent,
+		IsError:         dbLog.IsError,
+		ErrorMessage:    dbLog.ErrorMessage,
+		ErrorType:       dbLog.ErrorType,
+		CreatedAt:       dbLog.CreatedAt,
 	}
 
 	// 映射关联实体

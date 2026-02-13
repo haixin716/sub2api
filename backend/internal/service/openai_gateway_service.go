@@ -20,10 +20,12 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/ctxkey"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/openai"
 	"github.com/Wei-Shaw/sub2api/internal/util/responseheaders"
 	"github.com/Wei-Shaw/sub2api/internal/util/urlvalidator"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const (
@@ -156,12 +158,13 @@ type OpenAIUsage struct {
 
 // OpenAIForwardResult represents the result of forwarding
 type OpenAIForwardResult struct {
-	RequestID    string
-	Usage        OpenAIUsage
-	Model        string
-	Stream       bool
-	Duration     time.Duration
-	FirstTokenMs *int
+	ClientRequestID string // 内部请求ID，由网关生成
+	RequestID       string // 上游API返回的请求ID
+	Usage           OpenAIUsage
+	Model           string
+	Stream          bool
+	Duration        time.Duration
+	FirstTokenMs    *int
 }
 
 // OpenAIGatewayService handles OpenAI API gateway operations
@@ -958,13 +961,25 @@ func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, acco
 		}
 	}
 
+	// 获取 ClientRequestID
+	clientReqID := ""
+	if v := ctx.Value(ctxkey.ClientRequestID); v != nil {
+		clientReqID = v.(string)
+	}
+	// 如果没有 ClientRequestID，生成一个新的 UUID（兜底）
+	if clientReqID == "" {
+		clientReqID = uuid.New().String()
+		log.Printf("Warning: ClientRequestID not found in context, generated new UUID: %s", clientReqID)
+	}
+
 	return &OpenAIForwardResult{
-		RequestID:    resp.Header.Get("x-request-id"),
-		Usage:        *usage,
-		Model:        originalModel,
-		Stream:       reqStream,
-		Duration:     time.Since(startTime),
-		FirstTokenMs: firstTokenMs,
+		ClientRequestID: clientReqID,
+		RequestID:       resp.Header.Get("x-request-id"),
+		Usage:           *usage,
+		Model:           originalModel,
+		Stream:          reqStream,
+		Duration:        time.Since(startTime),
+		FirstTokenMs:    firstTokenMs,
 	}, nil
 }
 
@@ -1681,11 +1696,31 @@ func (s *OpenAIGatewayService) RecordUsage(ctx context.Context, input *OpenAIRec
 	// Create usage log
 	durationMs := int(result.Duration.Milliseconds())
 	accountRateMultiplier := account.BillingRateMultiplier()
+
+	// 设置 request_id（可能为空）
+	var requestID *string
+	if result.RequestID != "" {
+		requestID = &result.RequestID
+	}
+
+	// ClientRequestID 必须有值
+	clientReqID := result.ClientRequestID
+	if clientReqID == "" {
+		// 如果没有，使用 request_id 作为降级方案
+		clientReqID = result.RequestID
+	}
+	// 第三层兜底：如果还是空的，生成一个新的 UUID
+	if clientReqID == "" {
+		clientReqID = uuid.New().String()
+		log.Printf("Warning: Both ClientRequestID and RequestID are empty, generated new UUID: %s", clientReqID)
+	}
+
 	usageLog := &UsageLog{
 		UserID:                user.ID,
 		APIKeyID:              apiKey.ID,
 		AccountID:             account.ID,
-		RequestID:             result.RequestID,
+		ClientRequestID:       clientReqID,
+		RequestID:             requestID,
 		Model:                 result.Model,
 		InputTokens:           actualInputTokens,
 		OutputTokens:          result.Usage.OutputTokens,

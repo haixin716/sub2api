@@ -44,9 +44,23 @@ func (_c *RequestLogCreate) SetAccountID(v int64) *RequestLogCreate {
 	return _c
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (_c *RequestLogCreate) SetClientRequestID(v string) *RequestLogCreate {
+	_c.mutation.SetClientRequestID(v)
+	return _c
+}
+
 // SetRequestID sets the "request_id" field.
 func (_c *RequestLogCreate) SetRequestID(v string) *RequestLogCreate {
 	_c.mutation.SetRequestID(v)
+	return _c
+}
+
+// SetNillableRequestID sets the "request_id" field if the given value is not nil.
+func (_c *RequestLogCreate) SetNillableRequestID(v *string) *RequestLogCreate {
+	if v != nil {
+		_c.SetRequestID(*v)
+	}
 	return _c
 }
 
@@ -336,8 +350,13 @@ func (_c *RequestLogCreate) check() error {
 	if _, ok := _c.mutation.AccountID(); !ok {
 		return &ValidationError{Name: "account_id", err: errors.New(`ent: missing required field "RequestLog.account_id"`)}
 	}
-	if _, ok := _c.mutation.RequestID(); !ok {
-		return &ValidationError{Name: "request_id", err: errors.New(`ent: missing required field "RequestLog.request_id"`)}
+	if _, ok := _c.mutation.ClientRequestID(); !ok {
+		return &ValidationError{Name: "client_request_id", err: errors.New(`ent: missing required field "RequestLog.client_request_id"`)}
+	}
+	if v, ok := _c.mutation.ClientRequestID(); ok {
+		if err := requestlog.ClientRequestIDValidator(v); err != nil {
+			return &ValidationError{Name: "client_request_id", err: fmt.Errorf(`ent: validator failed for field "RequestLog.client_request_id": %w`, err)}
+		}
 	}
 	if v, ok := _c.mutation.RequestID(); ok {
 		if err := requestlog.RequestIDValidator(v); err != nil {
@@ -439,9 +458,13 @@ func (_c *RequestLogCreate) createSpec() (*RequestLog, *sqlgraph.CreateSpec) {
 		_spec = sqlgraph.NewCreateSpec(requestlog.Table, sqlgraph.NewFieldSpec(requestlog.FieldID, field.TypeInt64))
 	)
 	_spec.OnConflict = _c.conflict
+	if value, ok := _c.mutation.ClientRequestID(); ok {
+		_spec.SetField(requestlog.FieldClientRequestID, field.TypeString, value)
+		_node.ClientRequestID = value
+	}
 	if value, ok := _c.mutation.RequestID(); ok {
 		_spec.SetField(requestlog.FieldRequestID, field.TypeString, value)
-		_node.RequestID = value
+		_node.RequestID = &value
 	}
 	if value, ok := _c.mutation.Model(); ok {
 		_spec.SetField(requestlog.FieldModel, field.TypeString, value)
@@ -655,6 +678,18 @@ func (u *RequestLogUpsert) UpdateAccountID() *RequestLogUpsert {
 	return u
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (u *RequestLogUpsert) SetClientRequestID(v string) *RequestLogUpsert {
+	u.Set(requestlog.FieldClientRequestID, v)
+	return u
+}
+
+// UpdateClientRequestID sets the "client_request_id" field to the value that was provided on create.
+func (u *RequestLogUpsert) UpdateClientRequestID() *RequestLogUpsert {
+	u.SetExcluded(requestlog.FieldClientRequestID)
+	return u
+}
+
 // SetRequestID sets the "request_id" field.
 func (u *RequestLogUpsert) SetRequestID(v string) *RequestLogUpsert {
 	u.Set(requestlog.FieldRequestID, v)
@@ -664,6 +699,12 @@ func (u *RequestLogUpsert) SetRequestID(v string) *RequestLogUpsert {
 // UpdateRequestID sets the "request_id" field to the value that was provided on create.
 func (u *RequestLogUpsert) UpdateRequestID() *RequestLogUpsert {
 	u.SetExcluded(requestlog.FieldRequestID)
+	return u
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (u *RequestLogUpsert) ClearRequestID() *RequestLogUpsert {
+	u.SetNull(requestlog.FieldRequestID)
 	return u
 }
 
@@ -976,6 +1017,20 @@ func (u *RequestLogUpsertOne) UpdateAccountID() *RequestLogUpsertOne {
 	})
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (u *RequestLogUpsertOne) SetClientRequestID(v string) *RequestLogUpsertOne {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.SetClientRequestID(v)
+	})
+}
+
+// UpdateClientRequestID sets the "client_request_id" field to the value that was provided on create.
+func (u *RequestLogUpsertOne) UpdateClientRequestID() *RequestLogUpsertOne {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.UpdateClientRequestID()
+	})
+}
+
 // SetRequestID sets the "request_id" field.
 func (u *RequestLogUpsertOne) SetRequestID(v string) *RequestLogUpsertOne {
 	return u.Update(func(s *RequestLogUpsert) {
@@ -987,6 +1042,13 @@ func (u *RequestLogUpsertOne) SetRequestID(v string) *RequestLogUpsertOne {
 func (u *RequestLogUpsertOne) UpdateRequestID() *RequestLogUpsertOne {
 	return u.Update(func(s *RequestLogUpsert) {
 		s.UpdateRequestID()
+	})
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (u *RequestLogUpsertOne) ClearRequestID() *RequestLogUpsertOne {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.ClearRequestID()
 	})
 }
 
@@ -1502,6 +1564,20 @@ func (u *RequestLogUpsertBulk) UpdateAccountID() *RequestLogUpsertBulk {
 	})
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (u *RequestLogUpsertBulk) SetClientRequestID(v string) *RequestLogUpsertBulk {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.SetClientRequestID(v)
+	})
+}
+
+// UpdateClientRequestID sets the "client_request_id" field to the value that was provided on create.
+func (u *RequestLogUpsertBulk) UpdateClientRequestID() *RequestLogUpsertBulk {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.UpdateClientRequestID()
+	})
+}
+
 // SetRequestID sets the "request_id" field.
 func (u *RequestLogUpsertBulk) SetRequestID(v string) *RequestLogUpsertBulk {
 	return u.Update(func(s *RequestLogUpsert) {
@@ -1513,6 +1589,13 @@ func (u *RequestLogUpsertBulk) SetRequestID(v string) *RequestLogUpsertBulk {
 func (u *RequestLogUpsertBulk) UpdateRequestID() *RequestLogUpsertBulk {
 	return u.Update(func(s *RequestLogUpsert) {
 		s.UpdateRequestID()
+	})
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (u *RequestLogUpsertBulk) ClearRequestID() *RequestLogUpsertBulk {
+	return u.Update(func(s *RequestLogUpsert) {
+		s.ClearRequestID()
 	})
 }
 

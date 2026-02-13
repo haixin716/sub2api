@@ -473,26 +473,30 @@ func init() {
 	redeemcode.DefaultValidityDays = redeemcodeDescValidityDays.Default.(int)
 	requestlogFields := schema.RequestLog{}.Fields()
 	_ = requestlogFields
-	// requestlogDescRequestID is the schema descriptor for request_id field.
-	requestlogDescRequestID := requestlogFields[3].Descriptor()
-	// requestlog.RequestIDValidator is a validator for the "request_id" field. It is called by the builders before save.
-	requestlog.RequestIDValidator = func() func(string) error {
-		validators := requestlogDescRequestID.Validators
+	// requestlogDescClientRequestID is the schema descriptor for client_request_id field.
+	requestlogDescClientRequestID := requestlogFields[3].Descriptor()
+	// requestlog.ClientRequestIDValidator is a validator for the "client_request_id" field. It is called by the builders before save.
+	requestlog.ClientRequestIDValidator = func() func(string) error {
+		validators := requestlogDescClientRequestID.Validators
 		fns := [...]func(string) error{
 			validators[0].(func(string) error),
 			validators[1].(func(string) error),
 		}
-		return func(request_id string) error {
+		return func(client_request_id string) error {
 			for _, fn := range fns {
-				if err := fn(request_id); err != nil {
+				if err := fn(client_request_id); err != nil {
 					return err
 				}
 			}
 			return nil
 		}
 	}()
+	// requestlogDescRequestID is the schema descriptor for request_id field.
+	requestlogDescRequestID := requestlogFields[4].Descriptor()
+	// requestlog.RequestIDValidator is a validator for the "request_id" field. It is called by the builders before save.
+	requestlog.RequestIDValidator = requestlogDescRequestID.Validators[0].(func(string) error)
 	// requestlogDescModel is the schema descriptor for model field.
-	requestlogDescModel := requestlogFields[4].Descriptor()
+	requestlogDescModel := requestlogFields[5].Descriptor()
 	// requestlog.ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	requestlog.ModelValidator = func() func(string) error {
 		validators := requestlogDescModel.Validators
@@ -510,47 +514,47 @@ func init() {
 		}
 	}()
 	// requestlogDescRequestBody is the schema descriptor for request_body field.
-	requestlogDescRequestBody := requestlogFields[6].Descriptor()
+	requestlogDescRequestBody := requestlogFields[7].Descriptor()
 	// requestlog.RequestBodyValidator is a validator for the "request_body" field. It is called by the builders before save.
 	requestlog.RequestBodyValidator = requestlogDescRequestBody.Validators[0].(func(string) error)
 	// requestlogDescRequestMethod is the schema descriptor for request_method field.
-	requestlogDescRequestMethod := requestlogFields[7].Descriptor()
+	requestlogDescRequestMethod := requestlogFields[8].Descriptor()
 	// requestlog.DefaultRequestMethod holds the default value on creation for the request_method field.
 	requestlog.DefaultRequestMethod = requestlogDescRequestMethod.Default.(string)
 	// requestlog.RequestMethodValidator is a validator for the "request_method" field. It is called by the builders before save.
 	requestlog.RequestMethodValidator = requestlogDescRequestMethod.Validators[0].(func(string) error)
 	// requestlogDescRequestPath is the schema descriptor for request_path field.
-	requestlogDescRequestPath := requestlogFields[8].Descriptor()
+	requestlogDescRequestPath := requestlogFields[9].Descriptor()
 	// requestlog.DefaultRequestPath holds the default value on creation for the request_path field.
 	requestlog.DefaultRequestPath = requestlogDescRequestPath.Default.(string)
 	// requestlog.RequestPathValidator is a validator for the "request_path" field. It is called by the builders before save.
 	requestlog.RequestPathValidator = requestlogDescRequestPath.Validators[0].(func(string) error)
 	// requestlogDescResponseStatus is the schema descriptor for response_status field.
-	requestlogDescResponseStatus := requestlogFields[10].Descriptor()
+	requestlogDescResponseStatus := requestlogFields[11].Descriptor()
 	// requestlog.DefaultResponseStatus holds the default value on creation for the response_status field.
 	requestlog.DefaultResponseStatus = requestlogDescResponseStatus.Default.(int)
 	// requestlogDescStream is the schema descriptor for stream field.
-	requestlogDescStream := requestlogFields[11].Descriptor()
+	requestlogDescStream := requestlogFields[12].Descriptor()
 	// requestlog.DefaultStream holds the default value on creation for the stream field.
 	requestlog.DefaultStream = requestlogDescStream.Default.(bool)
 	// requestlogDescIPAddress is the schema descriptor for ip_address field.
-	requestlogDescIPAddress := requestlogFields[13].Descriptor()
+	requestlogDescIPAddress := requestlogFields[14].Descriptor()
 	// requestlog.IPAddressValidator is a validator for the "ip_address" field. It is called by the builders before save.
 	requestlog.IPAddressValidator = requestlogDescIPAddress.Validators[0].(func(string) error)
 	// requestlogDescUserAgent is the schema descriptor for user_agent field.
-	requestlogDescUserAgent := requestlogFields[14].Descriptor()
+	requestlogDescUserAgent := requestlogFields[15].Descriptor()
 	// requestlog.UserAgentValidator is a validator for the "user_agent" field. It is called by the builders before save.
 	requestlog.UserAgentValidator = requestlogDescUserAgent.Validators[0].(func(string) error)
 	// requestlogDescIsError is the schema descriptor for is_error field.
-	requestlogDescIsError := requestlogFields[15].Descriptor()
+	requestlogDescIsError := requestlogFields[16].Descriptor()
 	// requestlog.DefaultIsError holds the default value on creation for the is_error field.
 	requestlog.DefaultIsError = requestlogDescIsError.Default.(bool)
 	// requestlogDescErrorType is the schema descriptor for error_type field.
-	requestlogDescErrorType := requestlogFields[17].Descriptor()
+	requestlogDescErrorType := requestlogFields[18].Descriptor()
 	// requestlog.ErrorTypeValidator is a validator for the "error_type" field. It is called by the builders before save.
 	requestlog.ErrorTypeValidator = requestlogDescErrorType.Validators[0].(func(string) error)
 	// requestlogDescCreatedAt is the schema descriptor for created_at field.
-	requestlogDescCreatedAt := requestlogFields[18].Descriptor()
+	requestlogDescCreatedAt := requestlogFields[19].Descriptor()
 	// requestlog.DefaultCreatedAt holds the default value on creation for the created_at field.
 	requestlog.DefaultCreatedAt = requestlogDescCreatedAt.Default.(func() time.Time)
 	settingFields := schema.Setting{}.Fields()
@@ -618,26 +622,30 @@ func init() {
 	usagecleanuptask.DefaultDeletedRows = usagecleanuptaskDescDeletedRows.Default.(int64)
 	usagelogFields := schema.UsageLog{}.Fields()
 	_ = usagelogFields
-	// usagelogDescRequestID is the schema descriptor for request_id field.
-	usagelogDescRequestID := usagelogFields[3].Descriptor()
-	// usagelog.RequestIDValidator is a validator for the "request_id" field. It is called by the builders before save.
-	usagelog.RequestIDValidator = func() func(string) error {
-		validators := usagelogDescRequestID.Validators
+	// usagelogDescClientRequestID is the schema descriptor for client_request_id field.
+	usagelogDescClientRequestID := usagelogFields[3].Descriptor()
+	// usagelog.ClientRequestIDValidator is a validator for the "client_request_id" field. It is called by the builders before save.
+	usagelog.ClientRequestIDValidator = func() func(string) error {
+		validators := usagelogDescClientRequestID.Validators
 		fns := [...]func(string) error{
 			validators[0].(func(string) error),
 			validators[1].(func(string) error),
 		}
-		return func(request_id string) error {
+		return func(client_request_id string) error {
 			for _, fn := range fns {
-				if err := fn(request_id); err != nil {
+				if err := fn(client_request_id); err != nil {
 					return err
 				}
 			}
 			return nil
 		}
 	}()
+	// usagelogDescRequestID is the schema descriptor for request_id field.
+	usagelogDescRequestID := usagelogFields[4].Descriptor()
+	// usagelog.RequestIDValidator is a validator for the "request_id" field. It is called by the builders before save.
+	usagelog.RequestIDValidator = usagelogDescRequestID.Validators[0].(func(string) error)
 	// usagelogDescModel is the schema descriptor for model field.
-	usagelogDescModel := usagelogFields[4].Descriptor()
+	usagelogDescModel := usagelogFields[5].Descriptor()
 	// usagelog.ModelValidator is a validator for the "model" field. It is called by the builders before save.
 	usagelog.ModelValidator = func() func(string) error {
 		validators := usagelogDescModel.Validators
@@ -655,83 +663,83 @@ func init() {
 		}
 	}()
 	// usagelogDescInputTokens is the schema descriptor for input_tokens field.
-	usagelogDescInputTokens := usagelogFields[7].Descriptor()
+	usagelogDescInputTokens := usagelogFields[8].Descriptor()
 	// usagelog.DefaultInputTokens holds the default value on creation for the input_tokens field.
 	usagelog.DefaultInputTokens = usagelogDescInputTokens.Default.(int)
 	// usagelogDescOutputTokens is the schema descriptor for output_tokens field.
-	usagelogDescOutputTokens := usagelogFields[8].Descriptor()
+	usagelogDescOutputTokens := usagelogFields[9].Descriptor()
 	// usagelog.DefaultOutputTokens holds the default value on creation for the output_tokens field.
 	usagelog.DefaultOutputTokens = usagelogDescOutputTokens.Default.(int)
 	// usagelogDescCacheCreationTokens is the schema descriptor for cache_creation_tokens field.
-	usagelogDescCacheCreationTokens := usagelogFields[9].Descriptor()
+	usagelogDescCacheCreationTokens := usagelogFields[10].Descriptor()
 	// usagelog.DefaultCacheCreationTokens holds the default value on creation for the cache_creation_tokens field.
 	usagelog.DefaultCacheCreationTokens = usagelogDescCacheCreationTokens.Default.(int)
 	// usagelogDescCacheReadTokens is the schema descriptor for cache_read_tokens field.
-	usagelogDescCacheReadTokens := usagelogFields[10].Descriptor()
+	usagelogDescCacheReadTokens := usagelogFields[11].Descriptor()
 	// usagelog.DefaultCacheReadTokens holds the default value on creation for the cache_read_tokens field.
 	usagelog.DefaultCacheReadTokens = usagelogDescCacheReadTokens.Default.(int)
 	// usagelogDescCacheCreation5mTokens is the schema descriptor for cache_creation_5m_tokens field.
-	usagelogDescCacheCreation5mTokens := usagelogFields[11].Descriptor()
+	usagelogDescCacheCreation5mTokens := usagelogFields[12].Descriptor()
 	// usagelog.DefaultCacheCreation5mTokens holds the default value on creation for the cache_creation_5m_tokens field.
 	usagelog.DefaultCacheCreation5mTokens = usagelogDescCacheCreation5mTokens.Default.(int)
 	// usagelogDescCacheCreation1hTokens is the schema descriptor for cache_creation_1h_tokens field.
-	usagelogDescCacheCreation1hTokens := usagelogFields[12].Descriptor()
+	usagelogDescCacheCreation1hTokens := usagelogFields[13].Descriptor()
 	// usagelog.DefaultCacheCreation1hTokens holds the default value on creation for the cache_creation_1h_tokens field.
 	usagelog.DefaultCacheCreation1hTokens = usagelogDescCacheCreation1hTokens.Default.(int)
 	// usagelogDescInputCost is the schema descriptor for input_cost field.
-	usagelogDescInputCost := usagelogFields[13].Descriptor()
+	usagelogDescInputCost := usagelogFields[14].Descriptor()
 	// usagelog.DefaultInputCost holds the default value on creation for the input_cost field.
 	usagelog.DefaultInputCost = usagelogDescInputCost.Default.(float64)
 	// usagelogDescOutputCost is the schema descriptor for output_cost field.
-	usagelogDescOutputCost := usagelogFields[14].Descriptor()
+	usagelogDescOutputCost := usagelogFields[15].Descriptor()
 	// usagelog.DefaultOutputCost holds the default value on creation for the output_cost field.
 	usagelog.DefaultOutputCost = usagelogDescOutputCost.Default.(float64)
 	// usagelogDescCacheCreationCost is the schema descriptor for cache_creation_cost field.
-	usagelogDescCacheCreationCost := usagelogFields[15].Descriptor()
+	usagelogDescCacheCreationCost := usagelogFields[16].Descriptor()
 	// usagelog.DefaultCacheCreationCost holds the default value on creation for the cache_creation_cost field.
 	usagelog.DefaultCacheCreationCost = usagelogDescCacheCreationCost.Default.(float64)
 	// usagelogDescCacheReadCost is the schema descriptor for cache_read_cost field.
-	usagelogDescCacheReadCost := usagelogFields[16].Descriptor()
+	usagelogDescCacheReadCost := usagelogFields[17].Descriptor()
 	// usagelog.DefaultCacheReadCost holds the default value on creation for the cache_read_cost field.
 	usagelog.DefaultCacheReadCost = usagelogDescCacheReadCost.Default.(float64)
 	// usagelogDescTotalCost is the schema descriptor for total_cost field.
-	usagelogDescTotalCost := usagelogFields[17].Descriptor()
+	usagelogDescTotalCost := usagelogFields[18].Descriptor()
 	// usagelog.DefaultTotalCost holds the default value on creation for the total_cost field.
 	usagelog.DefaultTotalCost = usagelogDescTotalCost.Default.(float64)
 	// usagelogDescActualCost is the schema descriptor for actual_cost field.
-	usagelogDescActualCost := usagelogFields[18].Descriptor()
+	usagelogDescActualCost := usagelogFields[19].Descriptor()
 	// usagelog.DefaultActualCost holds the default value on creation for the actual_cost field.
 	usagelog.DefaultActualCost = usagelogDescActualCost.Default.(float64)
 	// usagelogDescRateMultiplier is the schema descriptor for rate_multiplier field.
-	usagelogDescRateMultiplier := usagelogFields[19].Descriptor()
+	usagelogDescRateMultiplier := usagelogFields[20].Descriptor()
 	// usagelog.DefaultRateMultiplier holds the default value on creation for the rate_multiplier field.
 	usagelog.DefaultRateMultiplier = usagelogDescRateMultiplier.Default.(float64)
 	// usagelogDescBillingType is the schema descriptor for billing_type field.
-	usagelogDescBillingType := usagelogFields[21].Descriptor()
+	usagelogDescBillingType := usagelogFields[22].Descriptor()
 	// usagelog.DefaultBillingType holds the default value on creation for the billing_type field.
 	usagelog.DefaultBillingType = usagelogDescBillingType.Default.(int8)
 	// usagelogDescStream is the schema descriptor for stream field.
-	usagelogDescStream := usagelogFields[22].Descriptor()
+	usagelogDescStream := usagelogFields[23].Descriptor()
 	// usagelog.DefaultStream holds the default value on creation for the stream field.
 	usagelog.DefaultStream = usagelogDescStream.Default.(bool)
 	// usagelogDescUserAgent is the schema descriptor for user_agent field.
-	usagelogDescUserAgent := usagelogFields[25].Descriptor()
+	usagelogDescUserAgent := usagelogFields[26].Descriptor()
 	// usagelog.UserAgentValidator is a validator for the "user_agent" field. It is called by the builders before save.
 	usagelog.UserAgentValidator = usagelogDescUserAgent.Validators[0].(func(string) error)
 	// usagelogDescIPAddress is the schema descriptor for ip_address field.
-	usagelogDescIPAddress := usagelogFields[26].Descriptor()
+	usagelogDescIPAddress := usagelogFields[27].Descriptor()
 	// usagelog.IPAddressValidator is a validator for the "ip_address" field. It is called by the builders before save.
 	usagelog.IPAddressValidator = usagelogDescIPAddress.Validators[0].(func(string) error)
 	// usagelogDescImageCount is the schema descriptor for image_count field.
-	usagelogDescImageCount := usagelogFields[27].Descriptor()
+	usagelogDescImageCount := usagelogFields[28].Descriptor()
 	// usagelog.DefaultImageCount holds the default value on creation for the image_count field.
 	usagelog.DefaultImageCount = usagelogDescImageCount.Default.(int)
 	// usagelogDescImageSize is the schema descriptor for image_size field.
-	usagelogDescImageSize := usagelogFields[28].Descriptor()
+	usagelogDescImageSize := usagelogFields[29].Descriptor()
 	// usagelog.ImageSizeValidator is a validator for the "image_size" field. It is called by the builders before save.
 	usagelog.ImageSizeValidator = usagelogDescImageSize.Validators[0].(func(string) error)
 	// usagelogDescCreatedAt is the schema descriptor for created_at field.
-	usagelogDescCreatedAt := usagelogFields[29].Descriptor()
+	usagelogDescCreatedAt := usagelogFields[30].Descriptor()
 	// usagelog.DefaultCreatedAt holds the default value on creation for the created_at field.
 	usagelog.DefaultCreatedAt = usagelogDescCreatedAt.Default.(func() time.Time)
 	userMixin := schema.User{}.Mixin()

@@ -13,12 +13,13 @@ var (
 // RequestLog 定义请求日志的 Service 层数据模型。
 // 记录每次 API 调用的完整请求和响应内容，用于调试、审计和问题排查。
 type RequestLog struct {
-	ID        int64
-	UserID    int64
-	APIKeyID  int64
-	AccountID int64
-	RequestID string
-	Model     string
+	ID              int64
+	UserID          int64
+	APIKeyID        int64
+	AccountID       int64
+	ClientRequestID string  // 内部请求ID，由网关生成
+	RequestID       *string // 上游API返回的请求ID（可能为空）
+	Model           string
 
 	GroupID *int64
 

@@ -30,6 +30,7 @@ import (
 	"github.com/tidwall/sjson"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 const (
@@ -173,7 +174,8 @@ type ClaudeUsage struct {
 
 // ForwardResult 转发结果
 type ForwardResult struct {
-	RequestID        string
+	ClientRequestID  string // 内部请求ID，由网关生成
+	RequestID        string // 上游API返回的请求ID（x-request-id响应头）
 	Usage            ClaudeUsage
 	Model            string
 	Stream           bool
@@ -2682,7 +2684,20 @@ func (s *GatewayService) Forward(ctx context.Context, c *gin.Context, account *A
 		}
 	}
 
+	// 获取 ClientRequestID
+	clientReqID := ""
+	if v := ctx.Value(ctxkey.ClientRequestID); v != nil {
+		clientReqID = v.(string)
+		log.Printf("[DEBUG] ClientRequestID from context: %s", clientReqID)
+	}
+	// 如果没有 ClientRequestID，生成一个新的 UUID（兜底）
+	if clientReqID == "" {
+		clientReqID = uuid.New().String()
+		log.Printf("[ERROR] ClientRequestID not found in context, generated new UUID: %s", clientReqID)
+	}
+
 	return &ForwardResult{
+		ClientRequestID:  clientReqID,
 		RequestID:        resp.Header.Get("x-request-id"),
 		Usage:            *usage,
 		Model:            originalModel, // 使用原始模型用于计费和日志
@@ -3520,11 +3535,33 @@ func (s *GatewayService) RecordUsage(ctx context.Context, input *RecordUsageInpu
 		imageSize = &result.ImageSize
 	}
 	accountRateMultiplier := account.BillingRateMultiplier()
+
+	// 设置 request_id（可能为空）
+	var requestID *string
+	if result.RequestID != "" {
+		requestID = &result.RequestID
+	}
+
+	// ClientRequestID 必须有值
+	clientReqID := result.ClientRequestID
+	log.Printf("[DEBUG] RecordUsage: ClientRequestID from result: '%s', RequestID: '%s'", result.ClientRequestID, result.RequestID)
+	if clientReqID == "" {
+		// 如果没有，使用 request_id 作为降级方案
+		clientReqID = result.RequestID
+		log.Printf("[WARN] RecordUsage: ClientRequestID empty, using RequestID: '%s'", clientReqID)
+	}
+	// 第三层兜底：如果还是空的，生成一个新的 UUID
+	if clientReqID == "" {
+		clientReqID = uuid.New().String()
+		log.Printf("[ERROR] RecordUsage: Both ClientRequestID and RequestID are empty, generated new UUID: %s", clientReqID)
+	}
+
 	usageLog := &UsageLog{
 		UserID:                user.ID,
 		APIKeyID:              apiKey.ID,
 		AccountID:             account.ID,
-		RequestID:             result.RequestID,
+		ClientRequestID:       clientReqID,
+		RequestID:             requestID,
 		Model:                 result.Model,
 		InputTokens:           result.Usage.InputTokens,
 		OutputTokens:          result.Usage.OutputTokens,
@@ -3949,13 +3986,32 @@ func (s *GatewayService) RecordRequest(ctx context.Context, input *RecordRequest
 	// 计算耗时
 	durationMs := int(result.Duration.Milliseconds())
 
+	// 设置 request_id（可能为空）
+	var requestID *string
+	if result.RequestID != "" {
+		requestID = &result.RequestID
+	}
+
+	// ClientRequestID 必须有值
+	clientReqID := result.ClientRequestID
+	if clientReqID == "" {
+		// 如果没有，使用 request_id 作为降级方案
+		clientReqID = result.RequestID
+	}
+	// 第三层兜底：如果还是空的，生成一个新的 UUID
+	if clientReqID == "" {
+		clientReqID = uuid.New().String()
+		log.Printf("Warning: Both ClientRequestID and RequestID are empty for request log, generated new UUID: %s", clientReqID)
+	}
+
 	// 构建请求日志
 	requestLog := &RequestLog{
-		UserID:         user.ID,
-		APIKeyID:       apiKey.ID,
-		AccountID:      account.ID,
-		RequestID:      result.RequestID,
-		Model:          result.Model,
+		UserID:          user.ID,
+		APIKeyID:        apiKey.ID,
+		AccountID:       account.ID,
+		ClientRequestID: clientReqID,
+		RequestID:       requestID,
+		Model:           result.Model,
 		GroupID:        apiKey.GroupID,
 		RequestBody:    input.RequestBody,
 		RequestMethod:  input.RequestMethod,

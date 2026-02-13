@@ -70,6 +70,11 @@ func AccountID(v int64) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldAccountID, v))
 }
 
+// ClientRequestID applies equality check predicate on the "client_request_id" field. It's identical to ClientRequestIDEQ.
+func ClientRequestID(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldClientRequestID, v))
+}
+
 // RequestID applies equality check predicate on the "request_id" field. It's identical to RequestIDEQ.
 func RequestID(v string) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldRequestID, v))
@@ -265,6 +270,71 @@ func AccountIDNotIn(vs ...int64) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldNotIn(FieldAccountID, vs...))
 }
 
+// ClientRequestIDEQ applies the EQ predicate on the "client_request_id" field.
+func ClientRequestIDEQ(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEQ(FieldClientRequestID, v))
+}
+
+// ClientRequestIDNEQ applies the NEQ predicate on the "client_request_id" field.
+func ClientRequestIDNEQ(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNEQ(FieldClientRequestID, v))
+}
+
+// ClientRequestIDIn applies the In predicate on the "client_request_id" field.
+func ClientRequestIDIn(vs ...string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIn(FieldClientRequestID, vs...))
+}
+
+// ClientRequestIDNotIn applies the NotIn predicate on the "client_request_id" field.
+func ClientRequestIDNotIn(vs ...string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotIn(FieldClientRequestID, vs...))
+}
+
+// ClientRequestIDGT applies the GT predicate on the "client_request_id" field.
+func ClientRequestIDGT(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGT(FieldClientRequestID, v))
+}
+
+// ClientRequestIDGTE applies the GTE predicate on the "client_request_id" field.
+func ClientRequestIDGTE(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldGTE(FieldClientRequestID, v))
+}
+
+// ClientRequestIDLT applies the LT predicate on the "client_request_id" field.
+func ClientRequestIDLT(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLT(FieldClientRequestID, v))
+}
+
+// ClientRequestIDLTE applies the LTE predicate on the "client_request_id" field.
+func ClientRequestIDLTE(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldLTE(FieldClientRequestID, v))
+}
+
+// ClientRequestIDContains applies the Contains predicate on the "client_request_id" field.
+func ClientRequestIDContains(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldContains(FieldClientRequestID, v))
+}
+
+// ClientRequestIDHasPrefix applies the HasPrefix predicate on the "client_request_id" field.
+func ClientRequestIDHasPrefix(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldHasPrefix(FieldClientRequestID, v))
+}
+
+// ClientRequestIDHasSuffix applies the HasSuffix predicate on the "client_request_id" field.
+func ClientRequestIDHasSuffix(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldHasSuffix(FieldClientRequestID, v))
+}
+
+// ClientRequestIDEqualFold applies the EqualFold predicate on the "client_request_id" field.
+func ClientRequestIDEqualFold(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldEqualFold(FieldClientRequestID, v))
+}
+
+// ClientRequestIDContainsFold applies the ContainsFold predicate on the "client_request_id" field.
+func ClientRequestIDContainsFold(v string) predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldContainsFold(FieldClientRequestID, v))
+}
+
 // RequestIDEQ applies the EQ predicate on the "request_id" field.
 func RequestIDEQ(v string) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldEQ(FieldRequestID, v))
@@ -318,6 +388,16 @@ func RequestIDHasPrefix(v string) predicate.UsageLog {
 // RequestIDHasSuffix applies the HasSuffix predicate on the "request_id" field.
 func RequestIDHasSuffix(v string) predicate.UsageLog {
 	return predicate.UsageLog(sql.FieldHasSuffix(FieldRequestID, v))
+}
+
+// RequestIDIsNil applies the IsNil predicate on the "request_id" field.
+func RequestIDIsNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldIsNull(FieldRequestID))
+}
+
+// RequestIDNotNil applies the NotNil predicate on the "request_id" field.
+func RequestIDNotNil() predicate.UsageLog {
+	return predicate.UsageLog(sql.FieldNotNull(FieldRequestID))
 }
 
 // RequestIDEqualFold applies the EqualFold predicate on the "request_id" field.

@@ -35,9 +35,15 @@ func (UsageLog) Fields() []ent.Field {
 		field.Int64("user_id"),
 		field.Int64("api_key_id"),
 		field.Int64("account_id"),
+		field.String("client_request_id").
+			MaxLen(64).
+			NotEmpty().
+			Comment("内部请求ID，由网关生成，用于关联 usage_logs 和 request_logs"),
 		field.String("request_id").
 			MaxLen(64).
-			NotEmpty(),
+			Optional().
+			Nillable().
+			Comment("上游 API 返回的请求ID（x-request-id响应头，可能为空）"),
 		field.String("model").
 			MaxLen(100).
 			NotEmpty(),
@@ -166,7 +172,8 @@ func (UsageLog) Indexes() []ent.Index {
 		index.Fields("subscription_id"),
 		index.Fields("created_at"),
 		index.Fields("model"),
-		index.Fields("request_id"),
+		index.Fields("client_request_id"), // 主关联键
+		index.Fields("request_id"),        // 辅助，用于上游追踪
 		// 复合索引用于时间范围查询
 		index.Fields("user_id", "created_at"),
 		index.Fields("api_key_id", "created_at"),

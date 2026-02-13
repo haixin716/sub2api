@@ -21,7 +21,8 @@ type CreateUsageLogRequest struct {
 	UserID                int64   `json:"user_id"`
 	APIKeyID              int64   `json:"api_key_id"`
 	AccountID             int64   `json:"account_id"`
-	RequestID             string  `json:"request_id"`
+	ClientRequestID       string  `json:"client_request_id"` // 内部请求ID
+	RequestID             *string `json:"request_id"`        // 上游请求ID（可选）
 	Model                 string  `json:"model"`
 	InputTokens           int     `json:"input_tokens"`
 	OutputTokens          int     `json:"output_tokens"`
@@ -95,6 +96,7 @@ func (s *UsageService) Create(ctx context.Context, req CreateUsageLogRequest) (*
 		UserID:                req.UserID,
 		APIKeyID:              req.APIKeyID,
 		AccountID:             req.AccountID,
+		ClientRequestID:       req.ClientRequestID,
 		RequestID:             req.RequestID,
 		Model:                 req.Model,
 		InputTokens:           req.InputTokens,

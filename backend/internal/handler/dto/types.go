@@ -212,12 +212,13 @@ type AdminRedeemCode struct {
 
 // UsageLog 是普通用户接口使用的 usage log DTO（不包含管理员字段）。
 type UsageLog struct {
-	ID        int64  `json:"id"`
-	UserID    int64  `json:"user_id"`
-	APIKeyID  int64  `json:"api_key_id"`
-	AccountID int64  `json:"account_id"`
-	RequestID string `json:"request_id"`
-	Model     string `json:"model"`
+	ID              int64   `json:"id"`
+	UserID          int64   `json:"user_id"`
+	APIKeyID        int64   `json:"api_key_id"`
+	AccountID       int64   `json:"account_id"`
+	ClientRequestID string  `json:"client_request_id"`
+	RequestID       *string `json:"request_id,omitempty"`
+	Model           string  `json:"model"`
 
 	GroupID        *int64 `json:"group_id"`
 	SubscriptionID *int64 `json:"subscription_id"`
@@ -383,12 +384,13 @@ type PromoCodeUsage struct {
 
 // RequestLog 定义请求日志的 DTO（用户端）
 type RequestLog struct {
-	ID        int64  `json:"id"`
-	UserID    int64  `json:"user_id"`
-	APIKeyID  int64  `json:"api_key_id"`
-	AccountID int64  `json:"account_id"`
-	RequestID string `json:"request_id"`
-	Model     string `json:"model"`
+	ID              int64   `json:"id"`
+	UserID          int64   `json:"user_id"`
+	APIKeyID        int64   `json:"api_key_id"`
+	AccountID       int64   `json:"account_id"`
+	ClientRequestID string  `json:"client_request_id"`
+	RequestID       *string `json:"request_id,omitempty"`
+	Model           string  `json:"model"`
 
 	GroupID *int64 `json:"group_id"`
 

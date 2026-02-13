@@ -35,10 +35,15 @@ func (RequestLog) Fields() []ent.Field {
 		field.Int64("user_id"),
 		field.Int64("api_key_id"),
 		field.Int64("account_id"),
-		field.String("request_id").
+		field.String("client_request_id").
 			MaxLen(64).
 			NotEmpty().
-			Comment("请求唯一ID，与usage_logs表关联"),
+			Comment("内部请求ID，由网关生成，用于关联 usage_logs 和 request_logs"),
+		field.String("request_id").
+			MaxLen(64).
+			Optional().
+			Nillable().
+			Comment("上游 API 返回的请求ID（x-request-id响应头，可能为空）"),
 		field.String("model").
 			MaxLen(100).
 			NotEmpty().
@@ -144,7 +149,8 @@ func (RequestLog) Indexes() []ent.Index {
 		index.Fields("api_key_id"),
 		index.Fields("account_id"),
 		index.Fields("group_id"),
-		index.Fields("request_id"), // 用于关联 usage_logs
+		index.Fields("client_request_id"), // 主关联键，用于关联 usage_logs
+		index.Fields("request_id"),        // 辅助，用于上游追踪
 		index.Fields("created_at"),
 		index.Fields("model"),
 		index.Fields("is_error"),

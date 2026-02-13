@@ -424,7 +424,8 @@ var (
 	// RequestLogsColumns holds the columns for the "request_logs" table.
 	RequestLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "request_id", Type: field.TypeString, Size: 64},
+		{Name: "client_request_id", Type: field.TypeString, Size: 64},
+		{Name: "request_id", Type: field.TypeString, Nullable: true, Size: 64},
 		{Name: "model", Type: field.TypeString, Size: 100},
 		{Name: "request_body", Type: field.TypeString, Size: 2147483647},
 		{Name: "request_method", Type: field.TypeString, Size: 10, Default: "POST"},
@@ -452,25 +453,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "request_logs_api_keys_request_logs",
-				Columns:    []*schema.Column{RequestLogsColumns[16]},
+				Columns:    []*schema.Column{RequestLogsColumns[17]},
 				RefColumns: []*schema.Column{APIKeysColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "request_logs_accounts_request_logs",
-				Columns:    []*schema.Column{RequestLogsColumns[17]},
+				Columns:    []*schema.Column{RequestLogsColumns[18]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "request_logs_groups_request_logs",
-				Columns:    []*schema.Column{RequestLogsColumns[18]},
+				Columns:    []*schema.Column{RequestLogsColumns[19]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "request_logs_users_request_logs",
-				Columns:    []*schema.Column{RequestLogsColumns[19]},
+				Columns:    []*schema.Column{RequestLogsColumns[20]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -479,57 +480,62 @@ var (
 			{
 				Name:    "requestlog_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[19]},
+				Columns: []*schema.Column{RequestLogsColumns[20]},
 			},
 			{
 				Name:    "requestlog_api_key_id",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[16]},
+				Columns: []*schema.Column{RequestLogsColumns[17]},
 			},
 			{
 				Name:    "requestlog_account_id",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[17]},
+				Columns: []*schema.Column{RequestLogsColumns[18]},
 			},
 			{
 				Name:    "requestlog_group_id",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[18]},
+				Columns: []*schema.Column{RequestLogsColumns[19]},
 			},
 			{
-				Name:    "requestlog_request_id",
+				Name:    "requestlog_client_request_id",
 				Unique:  false,
 				Columns: []*schema.Column{RequestLogsColumns[1]},
 			},
 			{
-				Name:    "requestlog_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[15]},
-			},
-			{
-				Name:    "requestlog_model",
+				Name:    "requestlog_request_id",
 				Unique:  false,
 				Columns: []*schema.Column{RequestLogsColumns[2]},
 			},
 			{
+				Name:    "requestlog_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[16]},
+			},
+			{
+				Name:    "requestlog_model",
+				Unique:  false,
+				Columns: []*schema.Column{RequestLogsColumns[3]},
+			},
+			{
 				Name:    "requestlog_is_error",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[12]},
+				Columns: []*schema.Column{RequestLogsColumns[13]},
 			},
 			{
 				Name:    "requestlog_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[19], RequestLogsColumns[15]},
+				Columns: []*schema.Column{RequestLogsColumns[20], RequestLogsColumns[16]},
 			},
 			{
 				Name:    "requestlog_api_key_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[16], RequestLogsColumns[15]},
+				Columns: []*schema.Column{RequestLogsColumns[17], RequestLogsColumns[16]},
 			},
 			{
 				Name:    "requestlog_is_error_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{RequestLogsColumns[12], RequestLogsColumns[15]},
+				Columns: []*schema.Column{RequestLogsColumns[13], RequestLogsColumns[16]},
 			},
 		},
 	}
@@ -587,7 +593,8 @@ var (
 	// UsageLogsColumns holds the columns for the "usage_logs" table.
 	UsageLogsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt64, Increment: true},
-		{Name: "request_id", Type: field.TypeString, Size: 64},
+		{Name: "client_request_id", Type: field.TypeString, Size: 64},
+		{Name: "request_id", Type: field.TypeString, Nullable: true, Size: 64},
 		{Name: "model", Type: field.TypeString, Size: 100},
 		{Name: "input_tokens", Type: field.TypeInt, Default: 0},
 		{Name: "output_tokens", Type: field.TypeInt, Default: 0},
@@ -626,31 +633,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "usage_logs_api_keys_usage_logs",
-				Columns:    []*schema.Column{UsageLogsColumns[26]},
+				Columns:    []*schema.Column{UsageLogsColumns[27]},
 				RefColumns: []*schema.Column{APIKeysColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "usage_logs_accounts_usage_logs",
-				Columns:    []*schema.Column{UsageLogsColumns[27]},
+				Columns:    []*schema.Column{UsageLogsColumns[28]},
 				RefColumns: []*schema.Column{AccountsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "usage_logs_groups_usage_logs",
-				Columns:    []*schema.Column{UsageLogsColumns[28]},
+				Columns:    []*schema.Column{UsageLogsColumns[29]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "usage_logs_users_usage_logs",
-				Columns:    []*schema.Column{UsageLogsColumns[29]},
+				Columns:    []*schema.Column{UsageLogsColumns[30]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "usage_logs_user_subscriptions_usage_logs",
-				Columns:    []*schema.Column{UsageLogsColumns[30]},
+				Columns:    []*schema.Column{UsageLogsColumns[31]},
 				RefColumns: []*schema.Column{UserSubscriptionsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -659,52 +666,57 @@ var (
 			{
 				Name:    "usagelog_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[29]},
+				Columns: []*schema.Column{UsageLogsColumns[30]},
 			},
 			{
 				Name:    "usagelog_api_key_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[26]},
+				Columns: []*schema.Column{UsageLogsColumns[27]},
 			},
 			{
 				Name:    "usagelog_account_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[27]},
+				Columns: []*schema.Column{UsageLogsColumns[28]},
 			},
 			{
 				Name:    "usagelog_group_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[28]},
+				Columns: []*schema.Column{UsageLogsColumns[29]},
 			},
 			{
 				Name:    "usagelog_subscription_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[30]},
+				Columns: []*schema.Column{UsageLogsColumns[31]},
 			},
 			{
 				Name:    "usagelog_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[25]},
+				Columns: []*schema.Column{UsageLogsColumns[26]},
 			},
 			{
 				Name:    "usagelog_model",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[2]},
+				Columns: []*schema.Column{UsageLogsColumns[3]},
 			},
 			{
-				Name:    "usagelog_request_id",
+				Name:    "usagelog_client_request_id",
 				Unique:  false,
 				Columns: []*schema.Column{UsageLogsColumns[1]},
 			},
 			{
+				Name:    "usagelog_request_id",
+				Unique:  false,
+				Columns: []*schema.Column{UsageLogsColumns[2]},
+			},
+			{
 				Name:    "usagelog_user_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[29], UsageLogsColumns[25]},
+				Columns: []*schema.Column{UsageLogsColumns[30], UsageLogsColumns[26]},
 			},
 			{
 				Name:    "usagelog_api_key_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{UsageLogsColumns[26], UsageLogsColumns[25]},
+				Columns: []*schema.Column{UsageLogsColumns[27], UsageLogsColumns[26]},
 			},
 		},
 	}

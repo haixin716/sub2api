@@ -11,9 +11,9 @@
         <div>
           <label class="text-xs font-medium text-gray-500 dark:text-gray-400">请求 ID</label>
           <div class="mt-1 flex items-center gap-2">
-            <code class="text-sm text-gray-900 dark:text-white">{{ request.request_id }}</code>
+            <code class="text-sm text-gray-900 dark:text-white">{{ request.client_request_id }}</code>
             <button
-              @click="copyToClipboard(request.request_id)"
+              @click="copyToClipboard(request.client_request_id)"
               class="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400"
             >
               复制

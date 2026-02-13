@@ -73,6 +73,20 @@ func (_u *RequestLogUpdate) SetNillableAccountID(v *int64) *RequestLogUpdate {
 	return _u
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (_u *RequestLogUpdate) SetClientRequestID(v string) *RequestLogUpdate {
+	_u.mutation.SetClientRequestID(v)
+	return _u
+}
+
+// SetNillableClientRequestID sets the "client_request_id" field if the given value is not nil.
+func (_u *RequestLogUpdate) SetNillableClientRequestID(v *string) *RequestLogUpdate {
+	if v != nil {
+		_u.SetClientRequestID(*v)
+	}
+	return _u
+}
+
 // SetRequestID sets the "request_id" field.
 func (_u *RequestLogUpdate) SetRequestID(v string) *RequestLogUpdate {
 	_u.mutation.SetRequestID(v)
@@ -84,6 +98,12 @@ func (_u *RequestLogUpdate) SetNillableRequestID(v *string) *RequestLogUpdate {
 	if v != nil {
 		_u.SetRequestID(*v)
 	}
+	return _u
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (_u *RequestLogUpdate) ClearRequestID() *RequestLogUpdate {
+	_u.mutation.ClearRequestID()
 	return _u
 }
 
@@ -417,6 +437,11 @@ func (_u *RequestLogUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *RequestLogUpdate) check() error {
+	if v, ok := _u.mutation.ClientRequestID(); ok {
+		if err := requestlog.ClientRequestIDValidator(v); err != nil {
+			return &ValidationError{Name: "client_request_id", err: fmt.Errorf(`ent: validator failed for field "RequestLog.client_request_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.RequestID(); ok {
 		if err := requestlog.RequestIDValidator(v); err != nil {
 			return &ValidationError{Name: "request_id", err: fmt.Errorf(`ent: validator failed for field "RequestLog.request_id": %w`, err)}
@@ -481,8 +506,14 @@ func (_u *RequestLogUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ClientRequestID(); ok {
+		_spec.SetField(requestlog.FieldClientRequestID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.RequestID(); ok {
 		_spec.SetField(requestlog.FieldRequestID, field.TypeString, value)
+	}
+	if _u.mutation.RequestIDCleared() {
+		_spec.ClearField(requestlog.FieldRequestID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(requestlog.FieldModel, field.TypeString, value)
@@ -725,6 +756,20 @@ func (_u *RequestLogUpdateOne) SetNillableAccountID(v *int64) *RequestLogUpdateO
 	return _u
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (_u *RequestLogUpdateOne) SetClientRequestID(v string) *RequestLogUpdateOne {
+	_u.mutation.SetClientRequestID(v)
+	return _u
+}
+
+// SetNillableClientRequestID sets the "client_request_id" field if the given value is not nil.
+func (_u *RequestLogUpdateOne) SetNillableClientRequestID(v *string) *RequestLogUpdateOne {
+	if v != nil {
+		_u.SetClientRequestID(*v)
+	}
+	return _u
+}
+
 // SetRequestID sets the "request_id" field.
 func (_u *RequestLogUpdateOne) SetRequestID(v string) *RequestLogUpdateOne {
 	_u.mutation.SetRequestID(v)
@@ -736,6 +781,12 @@ func (_u *RequestLogUpdateOne) SetNillableRequestID(v *string) *RequestLogUpdate
 	if v != nil {
 		_u.SetRequestID(*v)
 	}
+	return _u
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (_u *RequestLogUpdateOne) ClearRequestID() *RequestLogUpdateOne {
+	_u.mutation.ClearRequestID()
 	return _u
 }
 
@@ -1082,6 +1133,11 @@ func (_u *RequestLogUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *RequestLogUpdateOne) check() error {
+	if v, ok := _u.mutation.ClientRequestID(); ok {
+		if err := requestlog.ClientRequestIDValidator(v); err != nil {
+			return &ValidationError{Name: "client_request_id", err: fmt.Errorf(`ent: validator failed for field "RequestLog.client_request_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.RequestID(); ok {
 		if err := requestlog.RequestIDValidator(v); err != nil {
 			return &ValidationError{Name: "request_id", err: fmt.Errorf(`ent: validator failed for field "RequestLog.request_id": %w`, err)}
@@ -1163,8 +1219,14 @@ func (_u *RequestLogUpdateOne) sqlSave(ctx context.Context) (_node *RequestLog, 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ClientRequestID(); ok {
+		_spec.SetField(requestlog.FieldClientRequestID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.RequestID(); ok {
 		_spec.SetField(requestlog.FieldRequestID, field.TypeString, value)
+	}
+	if _u.mutation.RequestIDCleared() {
+		_spec.ClearField(requestlog.FieldRequestID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(requestlog.FieldModel, field.TypeString, value)

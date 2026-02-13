@@ -630,7 +630,8 @@ export interface UsageLog {
   user_id: number
   api_key_id: number
   account_id: number | null
-  request_id: string
+  client_request_id: string      // 内部请求ID，由网关生成
+  request_id?: string | null     // 上游API返回的请求ID（可能为空）
   model: string
 
   group_id: number | null

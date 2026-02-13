@@ -1,10 +1,10 @@
 <template>
   <AppLayout>
-    <TablePageLayout>
-      <template #actions>
-        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <!-- Total Requests -->
-          <div class="card p-4">
+    <div class="space-y-6">
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <!-- Total Requests -->
+        <div class="card p-4">
             <div class="flex items-center gap-3">
               <div class="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                 <Icon name="document" size="md" class="text-blue-600 dark:text-blue-400" />
@@ -81,12 +81,11 @@
             </div>
           </div>
         </div>
-      </template>
 
-      <template #filters>
-        <div class="card">
-          <div class="px-6 py-4">
-            <div class="flex flex-wrap items-end gap-4">
+      <!-- Filters Card -->
+      <div class="card">
+        <div class="px-6 py-4">
+          <div class="flex flex-wrap items-end gap-4">
               <!-- API Key Filter -->
               <div class="min-w-[180px]">
                 <label class="input-label">API Key</label>
@@ -155,12 +154,13 @@
             </div>
           </div>
         </div>
-      </template>
 
-      <template #table>
-        <DataTable :columns="columns" :data="requests" :loading="loading">
+      <!-- Table Card -->
+      <div class="card overflow-hidden">
+        <div class="overflow-auto">
+          <DataTable :columns="columns" :data="requests" :loading="loading">
           <template #cell-request_id="{ row }">
-            <code class="text-xs text-gray-600 dark:text-gray-400">{{ row.request_id.substring(0, 12) }}...</code>
+            <code class="text-xs text-gray-600 dark:text-gray-400">{{ row.client_request_id.substring(0, 12) }}...</code>
           </template>
 
           <template #cell-model="{ value }">
@@ -216,18 +216,19 @@
             </button>
           </template>
         </DataTable>
-
-        <!-- Pagination -->
-        <div v-if="pagination.total > 0" class="mt-4 flex justify-center">
-          <Pagination
-            :page="pagination.page"
-            :total="pagination.total"
-            :page-size="pagination.page_size"
-            @update:page="onPageChange"
-          />
         </div>
-      </template>
-    </TablePageLayout>
+      </div>
+
+      <!-- Pagination -->
+      <Pagination
+        v-if="pagination.total > 0"
+        :page="pagination.page"
+        :total="pagination.total"
+        :page-size="pagination.page_size"
+        @update:page="onPageChange"
+        @update:page-size="onPageSizeChange"
+      />
+    </div>
 
     <!-- Detail Modal -->
     <RequestDetailModal
@@ -243,7 +244,6 @@ import { ref, computed, onMounted } from 'vue'
 import { list, exportToCSV } from '@/api/request'
 import type { RequestLog } from '@/types/request'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import TablePageLayout from '@/components/layout/TablePageLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
 import Select from '@/components/common/Select.vue'
@@ -360,6 +360,12 @@ function onDateRangeChange() {
 
 function onPageChange(page: number) {
   pagination.value.page = page
+  loadRequests()
+}
+
+function onPageSizeChange(pageSize: number) {
+  pagination.value.page_size = pageSize
+  pagination.value.page = 1
   loadRequests()
 }
 

@@ -356,6 +356,7 @@ func usageLogFromServiceUser(l *service.UsageLog) UsageLog {
 		UserID:                l.UserID,
 		APIKeyID:              l.APIKeyID,
 		AccountID:             l.AccountID,
+		ClientRequestID:       l.ClientRequestID,
 		RequestID:             l.RequestID,
 		Model:                 l.Model,
 		GroupID:               l.GroupID,
@@ -550,12 +551,13 @@ func PromoCodeUsageFromService(u *service.PromoCodeUsage) *PromoCodeUsage {
 func requestLogFromServiceUser(l *service.RequestLog) RequestLog {
 	// 普通用户 DTO：严禁包含管理员字段（ip_address、account）
 	return RequestLog{
-		ID:             l.ID,
-		UserID:         l.UserID,
-		APIKeyID:       l.APIKeyID,
-		AccountID:      l.AccountID,
-		RequestID:      l.RequestID,
-		Model:          l.Model,
+		ID:              l.ID,
+		UserID:          l.UserID,
+		APIKeyID:        l.APIKeyID,
+		AccountID:       l.AccountID,
+		ClientRequestID: l.ClientRequestID,
+		RequestID:       l.RequestID,
+		Model:           l.Model,
 		GroupID:        l.GroupID,
 		RequestBody:    l.RequestBody,
 		RequestMethod:  l.RequestMethod,

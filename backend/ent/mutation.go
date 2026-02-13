@@ -10196,6 +10196,7 @@ type RequestLogMutation struct {
 	op                 Op
 	typ                string
 	id                 *int64
+	client_request_id  *string
 	request_id         *string
 	model              *string
 	request_body       *string
@@ -10433,6 +10434,42 @@ func (m *RequestLogMutation) ResetAccountID() {
 	m.account = nil
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (m *RequestLogMutation) SetClientRequestID(s string) {
+	m.client_request_id = &s
+}
+
+// ClientRequestID returns the value of the "client_request_id" field in the mutation.
+func (m *RequestLogMutation) ClientRequestID() (r string, exists bool) {
+	v := m.client_request_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientRequestID returns the old "client_request_id" field's value of the RequestLog entity.
+// If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RequestLogMutation) OldClientRequestID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientRequestID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientRequestID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientRequestID: %w", err)
+	}
+	return oldValue.ClientRequestID, nil
+}
+
+// ResetClientRequestID resets all changes to the "client_request_id" field.
+func (m *RequestLogMutation) ResetClientRequestID() {
+	m.client_request_id = nil
+}
+
 // SetRequestID sets the "request_id" field.
 func (m *RequestLogMutation) SetRequestID(s string) {
 	m.request_id = &s
@@ -10450,7 +10487,7 @@ func (m *RequestLogMutation) RequestID() (r string, exists bool) {
 // OldRequestID returns the old "request_id" field's value of the RequestLog entity.
 // If the RequestLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RequestLogMutation) OldRequestID(ctx context.Context) (v string, err error) {
+func (m *RequestLogMutation) OldRequestID(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRequestID is only allowed on UpdateOne operations")
 	}
@@ -10464,9 +10501,22 @@ func (m *RequestLogMutation) OldRequestID(ctx context.Context) (v string, err er
 	return oldValue.RequestID, nil
 }
 
+// ClearRequestID clears the value of the "request_id" field.
+func (m *RequestLogMutation) ClearRequestID() {
+	m.request_id = nil
+	m.clearedFields[requestlog.FieldRequestID] = struct{}{}
+}
+
+// RequestIDCleared returns if the "request_id" field was cleared in this mutation.
+func (m *RequestLogMutation) RequestIDCleared() bool {
+	_, ok := m.clearedFields[requestlog.FieldRequestID]
+	return ok
+}
+
 // ResetRequestID resets all changes to the "request_id" field.
 func (m *RequestLogMutation) ResetRequestID() {
 	m.request_id = nil
+	delete(m.clearedFields, requestlog.FieldRequestID)
 }
 
 // SetModel sets the "model" field.
@@ -11283,7 +11333,7 @@ func (m *RequestLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RequestLogMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 20)
 	if m.user != nil {
 		fields = append(fields, requestlog.FieldUserID)
 	}
@@ -11292,6 +11342,9 @@ func (m *RequestLogMutation) Fields() []string {
 	}
 	if m.account != nil {
 		fields = append(fields, requestlog.FieldAccountID)
+	}
+	if m.client_request_id != nil {
+		fields = append(fields, requestlog.FieldClientRequestID)
 	}
 	if m.request_id != nil {
 		fields = append(fields, requestlog.FieldRequestID)
@@ -11355,6 +11408,8 @@ func (m *RequestLogMutation) Field(name string) (ent.Value, bool) {
 		return m.APIKeyID()
 	case requestlog.FieldAccountID:
 		return m.AccountID()
+	case requestlog.FieldClientRequestID:
+		return m.ClientRequestID()
 	case requestlog.FieldRequestID:
 		return m.RequestID()
 	case requestlog.FieldModel:
@@ -11402,6 +11457,8 @@ func (m *RequestLogMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldAPIKeyID(ctx)
 	case requestlog.FieldAccountID:
 		return m.OldAccountID(ctx)
+	case requestlog.FieldClientRequestID:
+		return m.OldClientRequestID(ctx)
 	case requestlog.FieldRequestID:
 		return m.OldRequestID(ctx)
 	case requestlog.FieldModel:
@@ -11463,6 +11520,13 @@ func (m *RequestLogMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAccountID(v)
+		return nil
+	case requestlog.FieldClientRequestID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientRequestID(v)
 		return nil
 	case requestlog.FieldRequestID:
 		v, ok := value.(string)
@@ -11633,6 +11697,9 @@ func (m *RequestLogMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *RequestLogMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(requestlog.FieldRequestID) {
+		fields = append(fields, requestlog.FieldRequestID)
+	}
 	if m.FieldCleared(requestlog.FieldGroupID) {
 		fields = append(fields, requestlog.FieldGroupID)
 	}
@@ -11668,6 +11735,9 @@ func (m *RequestLogMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *RequestLogMutation) ClearField(name string) error {
 	switch name {
+	case requestlog.FieldRequestID:
+		m.ClearRequestID()
+		return nil
 	case requestlog.FieldGroupID:
 		m.ClearGroupID()
 		return nil
@@ -11705,6 +11775,9 @@ func (m *RequestLogMutation) ResetField(name string) error {
 		return nil
 	case requestlog.FieldAccountID:
 		m.ResetAccountID()
+		return nil
+	case requestlog.FieldClientRequestID:
+		m.ResetClientRequestID()
 		return nil
 	case requestlog.FieldRequestID:
 		m.ResetRequestID()
@@ -13409,6 +13482,7 @@ type UsageLogMutation struct {
 	op                          Op
 	typ                         string
 	id                          *int64
+	client_request_id           *string
 	request_id                  *string
 	model                       *string
 	input_tokens                *int
@@ -13674,6 +13748,42 @@ func (m *UsageLogMutation) ResetAccountID() {
 	m.account = nil
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (m *UsageLogMutation) SetClientRequestID(s string) {
+	m.client_request_id = &s
+}
+
+// ClientRequestID returns the value of the "client_request_id" field in the mutation.
+func (m *UsageLogMutation) ClientRequestID() (r string, exists bool) {
+	v := m.client_request_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientRequestID returns the old "client_request_id" field's value of the UsageLog entity.
+// If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UsageLogMutation) OldClientRequestID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientRequestID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientRequestID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientRequestID: %w", err)
+	}
+	return oldValue.ClientRequestID, nil
+}
+
+// ResetClientRequestID resets all changes to the "client_request_id" field.
+func (m *UsageLogMutation) ResetClientRequestID() {
+	m.client_request_id = nil
+}
+
 // SetRequestID sets the "request_id" field.
 func (m *UsageLogMutation) SetRequestID(s string) {
 	m.request_id = &s
@@ -13691,7 +13801,7 @@ func (m *UsageLogMutation) RequestID() (r string, exists bool) {
 // OldRequestID returns the old "request_id" field's value of the UsageLog entity.
 // If the UsageLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UsageLogMutation) OldRequestID(ctx context.Context) (v string, err error) {
+func (m *UsageLogMutation) OldRequestID(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRequestID is only allowed on UpdateOne operations")
 	}
@@ -13705,9 +13815,22 @@ func (m *UsageLogMutation) OldRequestID(ctx context.Context) (v string, err erro
 	return oldValue.RequestID, nil
 }
 
+// ClearRequestID clears the value of the "request_id" field.
+func (m *UsageLogMutation) ClearRequestID() {
+	m.request_id = nil
+	m.clearedFields[usagelog.FieldRequestID] = struct{}{}
+}
+
+// RequestIDCleared returns if the "request_id" field was cleared in this mutation.
+func (m *UsageLogMutation) RequestIDCleared() bool {
+	_, ok := m.clearedFields[usagelog.FieldRequestID]
+	return ok
+}
+
 // ResetRequestID resets all changes to the "request_id" field.
 func (m *UsageLogMutation) ResetRequestID() {
 	m.request_id = nil
+	delete(m.clearedFields, usagelog.FieldRequestID)
 }
 
 // SetModel sets the "model" field.
@@ -15282,7 +15405,7 @@ func (m *UsageLogMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UsageLogMutation) Fields() []string {
-	fields := make([]string, 0, 30)
+	fields := make([]string, 0, 31)
 	if m.user != nil {
 		fields = append(fields, usagelog.FieldUserID)
 	}
@@ -15291,6 +15414,9 @@ func (m *UsageLogMutation) Fields() []string {
 	}
 	if m.account != nil {
 		fields = append(fields, usagelog.FieldAccountID)
+	}
+	if m.client_request_id != nil {
+		fields = append(fields, usagelog.FieldClientRequestID)
 	}
 	if m.request_id != nil {
 		fields = append(fields, usagelog.FieldRequestID)
@@ -15387,6 +15513,8 @@ func (m *UsageLogMutation) Field(name string) (ent.Value, bool) {
 		return m.APIKeyID()
 	case usagelog.FieldAccountID:
 		return m.AccountID()
+	case usagelog.FieldClientRequestID:
+		return m.ClientRequestID()
 	case usagelog.FieldRequestID:
 		return m.RequestID()
 	case usagelog.FieldModel:
@@ -15456,6 +15584,8 @@ func (m *UsageLogMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldAPIKeyID(ctx)
 	case usagelog.FieldAccountID:
 		return m.OldAccountID(ctx)
+	case usagelog.FieldClientRequestID:
+		return m.OldClientRequestID(ctx)
 	case usagelog.FieldRequestID:
 		return m.OldRequestID(ctx)
 	case usagelog.FieldModel:
@@ -15539,6 +15669,13 @@ func (m *UsageLogMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAccountID(v)
+		return nil
+	case usagelog.FieldClientRequestID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientRequestID(v)
 		return nil
 	case usagelog.FieldRequestID:
 		v, ok := value.(string)
@@ -15978,6 +16115,9 @@ func (m *UsageLogMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UsageLogMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(usagelog.FieldRequestID) {
+		fields = append(fields, usagelog.FieldRequestID)
+	}
 	if m.FieldCleared(usagelog.FieldGroupID) {
 		fields = append(fields, usagelog.FieldGroupID)
 	}
@@ -16016,6 +16156,9 @@ func (m *UsageLogMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UsageLogMutation) ClearField(name string) error {
 	switch name {
+	case usagelog.FieldRequestID:
+		m.ClearRequestID()
+		return nil
 	case usagelog.FieldGroupID:
 		m.ClearGroupID()
 		return nil
@@ -16056,6 +16199,9 @@ func (m *UsageLogMutation) ResetField(name string) error {
 		return nil
 	case usagelog.FieldAccountID:
 		m.ResetAccountID()
+		return nil
+	case usagelog.FieldClientRequestID:
+		m.ResetClientRequestID()
 		return nil
 	case usagelog.FieldRequestID:
 		m.ResetRequestID()

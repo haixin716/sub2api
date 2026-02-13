@@ -74,6 +74,20 @@ func (_u *UsageLogUpdate) SetNillableAccountID(v *int64) *UsageLogUpdate {
 	return _u
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (_u *UsageLogUpdate) SetClientRequestID(v string) *UsageLogUpdate {
+	_u.mutation.SetClientRequestID(v)
+	return _u
+}
+
+// SetNillableClientRequestID sets the "client_request_id" field if the given value is not nil.
+func (_u *UsageLogUpdate) SetNillableClientRequestID(v *string) *UsageLogUpdate {
+	if v != nil {
+		_u.SetClientRequestID(*v)
+	}
+	return _u
+}
+
 // SetRequestID sets the "request_id" field.
 func (_u *UsageLogUpdate) SetRequestID(v string) *UsageLogUpdate {
 	_u.mutation.SetRequestID(v)
@@ -85,6 +99,12 @@ func (_u *UsageLogUpdate) SetNillableRequestID(v *string) *UsageLogUpdate {
 	if v != nil {
 		_u.SetRequestID(*v)
 	}
+	return _u
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (_u *UsageLogUpdate) ClearRequestID() *UsageLogUpdate {
+	_u.mutation.ClearRequestID()
 	return _u
 }
 
@@ -701,6 +721,11 @@ func (_u *UsageLogUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UsageLogUpdate) check() error {
+	if v, ok := _u.mutation.ClientRequestID(); ok {
+		if err := usagelog.ClientRequestIDValidator(v); err != nil {
+			return &ValidationError{Name: "client_request_id", err: fmt.Errorf(`ent: validator failed for field "UsageLog.client_request_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.RequestID(); ok {
 		if err := usagelog.RequestIDValidator(v); err != nil {
 			return &ValidationError{Name: "request_id", err: fmt.Errorf(`ent: validator failed for field "UsageLog.request_id": %w`, err)}
@@ -750,8 +775,14 @@ func (_u *UsageLogUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ClientRequestID(); ok {
+		_spec.SetField(usagelog.FieldClientRequestID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.RequestID(); ok {
 		_spec.SetField(usagelog.FieldRequestID, field.TypeString, value)
+	}
+	if _u.mutation.RequestIDCleared() {
+		_spec.ClearField(usagelog.FieldRequestID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(usagelog.FieldModel, field.TypeString, value)
@@ -1101,6 +1132,20 @@ func (_u *UsageLogUpdateOne) SetNillableAccountID(v *int64) *UsageLogUpdateOne {
 	return _u
 }
 
+// SetClientRequestID sets the "client_request_id" field.
+func (_u *UsageLogUpdateOne) SetClientRequestID(v string) *UsageLogUpdateOne {
+	_u.mutation.SetClientRequestID(v)
+	return _u
+}
+
+// SetNillableClientRequestID sets the "client_request_id" field if the given value is not nil.
+func (_u *UsageLogUpdateOne) SetNillableClientRequestID(v *string) *UsageLogUpdateOne {
+	if v != nil {
+		_u.SetClientRequestID(*v)
+	}
+	return _u
+}
+
 // SetRequestID sets the "request_id" field.
 func (_u *UsageLogUpdateOne) SetRequestID(v string) *UsageLogUpdateOne {
 	_u.mutation.SetRequestID(v)
@@ -1112,6 +1157,12 @@ func (_u *UsageLogUpdateOne) SetNillableRequestID(v *string) *UsageLogUpdateOne 
 	if v != nil {
 		_u.SetRequestID(*v)
 	}
+	return _u
+}
+
+// ClearRequestID clears the value of the "request_id" field.
+func (_u *UsageLogUpdateOne) ClearRequestID() *UsageLogUpdateOne {
+	_u.mutation.ClearRequestID()
 	return _u
 }
 
@@ -1741,6 +1792,11 @@ func (_u *UsageLogUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UsageLogUpdateOne) check() error {
+	if v, ok := _u.mutation.ClientRequestID(); ok {
+		if err := usagelog.ClientRequestIDValidator(v); err != nil {
+			return &ValidationError{Name: "client_request_id", err: fmt.Errorf(`ent: validator failed for field "UsageLog.client_request_id": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.RequestID(); ok {
 		if err := usagelog.RequestIDValidator(v); err != nil {
 			return &ValidationError{Name: "request_id", err: fmt.Errorf(`ent: validator failed for field "UsageLog.request_id": %w`, err)}
@@ -1807,8 +1863,14 @@ func (_u *UsageLogUpdateOne) sqlSave(ctx context.Context) (_node *UsageLog, err 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ClientRequestID(); ok {
+		_spec.SetField(usagelog.FieldClientRequestID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.RequestID(); ok {
 		_spec.SetField(usagelog.FieldRequestID, field.TypeString, value)
+	}
+	if _u.mutation.RequestIDCleared() {
+		_spec.ClearField(usagelog.FieldRequestID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Model(); ok {
 		_spec.SetField(usagelog.FieldModel, field.TypeString, value)

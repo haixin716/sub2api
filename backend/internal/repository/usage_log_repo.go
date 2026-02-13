@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	stdlog "log"
 	"os"
 	"strings"
 	"time"
@@ -22,7 +23,7 @@ import (
 	"github.com/lib/pq"
 )
 
-const usageLogSelectColumns = "id, user_id, api_key_id, account_id, request_id, model, group_id, subscription_id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, cache_creation_5m_tokens, cache_creation_1h_tokens, input_cost, output_cost, cache_creation_cost, cache_read_cost, total_cost, actual_cost, rate_multiplier, account_rate_multiplier, billing_type, stream, duration_ms, first_token_ms, user_agent, ip_address, image_count, image_size, created_at"
+const usageLogSelectColumns = "id, user_id, api_key_id, account_id, client_request_id, request_id, model, group_id, subscription_id, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, cache_creation_5m_tokens, cache_creation_1h_tokens, input_cost, output_cost, cache_creation_cost, cache_read_cost, total_cost, actual_cost, rate_multiplier, account_rate_multiplier, billing_type, stream, duration_ms, first_token_ms, user_agent, ip_address, image_count, image_size, created_at"
 
 type usageLogRepository struct {
 	client *dbent.Client
@@ -78,8 +79,14 @@ func (r *usageLogRepository) Create(ctx context.Context, log *service.UsageLog) 
 		createdAt = time.Now()
 	}
 
-	requestID := strings.TrimSpace(log.RequestID)
-	log.RequestID = requestID
+	// Validate required fields
+	if strings.TrimSpace(log.ClientRequestID) == "" {
+		stdlog.Printf("[ERROR] UsageLogRepo.Create: client_request_id is empty! UserID=%d, APIKeyID=%d", log.UserID, log.APIKeyID)
+		return false, fmt.Errorf("client_request_id is required")
+	}
+
+	stdlog.Printf("[DEBUG] UsageLogRepo.Create: Inserting with ClientRequestID='%s', UserID=%d, APIKeyID=%d, AccountID=%d",
+		log.ClientRequestID, log.UserID, log.APIKeyID, log.AccountID)
 
 	rateMultiplier := log.RateMultiplier
 
@@ -88,6 +95,7 @@ func (r *usageLogRepository) Create(ctx context.Context, log *service.UsageLog) 
 			user_id,
 			api_key_id,
 			account_id,
+			client_request_id,
 			request_id,
 			model,
 			group_id,
@@ -116,14 +124,14 @@ func (r *usageLogRepository) Create(ctx context.Context, log *service.UsageLog) 
 			image_size,
 			created_at
 		) VALUES (
-			$1, $2, $3, $4, $5,
-			$6, $7,
-			$8, $9, $10, $11,
-			$12, $13,
-			$14, $15, $16, $17, $18, $19,
-			$20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30
+			$1, $2, $3, $4, $5, $6,
+			$7, $8,
+			$9, $10, $11, $12,
+			$13, $14,
+			$15, $16, $17, $18, $19, $20,
+			$21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31
 		)
-		ON CONFLICT (request_id, api_key_id) DO NOTHING
+		ON CONFLICT (client_request_id, api_key_id) DO NOTHING
 		RETURNING id, created_at
 	`
 
@@ -134,16 +142,13 @@ func (r *usageLogRepository) Create(ctx context.Context, log *service.UsageLog) 
 	userAgent := nullString(log.UserAgent)
 	ipAddress := nullString(log.IPAddress)
 	imageSize := nullString(log.ImageSize)
-
-	var requestIDArg any
-	if requestID != "" {
-		requestIDArg = requestID
-	}
+	requestIDArg := nullString(log.RequestID)
 
 	args := []any{
 		log.UserID,
 		log.APIKeyID,
 		log.AccountID,
+		log.ClientRequestID,
 		requestIDArg,
 		log.Model,
 		groupID,
@@ -173,9 +178,10 @@ func (r *usageLogRepository) Create(ctx context.Context, log *service.UsageLog) 
 		createdAt,
 	}
 	if err := scanSingleRow(ctx, sqlq, query, args, &log.ID, &log.CreatedAt); err != nil {
-		if errors.Is(err, sql.ErrNoRows) && requestID != "" {
-			selectQuery := "SELECT id, created_at FROM usage_logs WHERE request_id = $1 AND api_key_id = $2"
-			if err := scanSingleRow(ctx, sqlq, selectQuery, []any{requestID, log.APIKeyID}, &log.ID, &log.CreatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			// Conflict detected - fetch existing record
+			selectQuery := "SELECT id, created_at FROM usage_logs WHERE client_request_id = $1 AND api_key_id = $2"
+			if err := scanSingleRow(ctx, sqlq, selectQuery, []any{log.ClientRequestID, log.APIKeyID}, &log.ID, &log.CreatedAt); err != nil {
 				return false, err
 			}
 			log.RateMultiplier = rateMultiplier
@@ -2064,6 +2070,7 @@ func scanUsageLog(scanner interface{ Scan(...any) error }) (*service.UsageLog, e
 		userID                int64
 		apiKeyID              int64
 		accountID             int64
+		clientRequestID       string
 		requestID             sql.NullString
 		model                 string
 		groupID               sql.NullInt64
@@ -2098,6 +2105,7 @@ func scanUsageLog(scanner interface{ Scan(...any) error }) (*service.UsageLog, e
 		&userID,
 		&apiKeyID,
 		&accountID,
+		&clientRequestID,
 		&requestID,
 		&model,
 		&groupID,
@@ -2134,6 +2142,7 @@ func scanUsageLog(scanner interface{ Scan(...any) error }) (*service.UsageLog, e
 		UserID:                userID,
 		APIKeyID:              apiKeyID,
 		AccountID:             accountID,
+		ClientRequestID:       clientRequestID,
 		Model:                 model,
 		InputTokens:           inputTokens,
 		OutputTokens:          outputTokens,
@@ -2156,7 +2165,7 @@ func scanUsageLog(scanner interface{ Scan(...any) error }) (*service.UsageLog, e
 	}
 
 	if requestID.Valid {
-		log.RequestID = requestID.String
+		log.RequestID = &requestID.String
 	}
 	if groupID.Valid {
 		value := groupID.Int64
