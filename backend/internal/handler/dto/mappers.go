@@ -443,6 +443,36 @@ func UsageCleanupTaskFromService(task *service.UsageCleanupTask) *UsageCleanupTa
 	}
 }
 
+func RequestLogCleanupTaskFromService(task *service.RequestLogCleanupTask) *RequestLogCleanupTask {
+	if task == nil {
+		return nil
+	}
+	return &RequestLogCleanupTask{
+		ID:     task.ID,
+		Status: task.Status,
+		Filters: RequestLogCleanupFilters{
+			StartTime: task.Filters.StartTime,
+			EndTime:   task.Filters.EndTime,
+			UserID:    task.Filters.UserID,
+			APIKeyID:  task.Filters.APIKeyID,
+			AccountID: task.Filters.AccountID,
+			GroupID:   task.Filters.GroupID,
+			Model:     task.Filters.Model,
+			Stream:    task.Filters.Stream,
+			IsError:   task.Filters.IsError,
+		},
+		CreatedBy:    task.CreatedBy,
+		DeletedRows:  task.DeletedRows,
+		ErrorMessage: task.ErrorMsg,
+		CanceledBy:   task.CanceledBy,
+		CanceledAt:   task.CanceledAt,
+		StartedAt:    task.StartedAt,
+		FinishedAt:   task.FinishedAt,
+		CreatedAt:    task.CreatedAt,
+		UpdatedAt:    task.UpdatedAt,
+	}
+}
+
 func SettingFromService(s *service.Setting) *Setting {
 	if s == nil {
 		return nil

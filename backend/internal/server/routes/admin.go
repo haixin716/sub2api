@@ -370,6 +370,9 @@ func registerRequestRoutes(admin *gin.RouterGroup, h *handler.Handlers) {
 		requests.GET("/:id", h.Admin.Request.GetByID)
 		requests.GET("/search-users", h.Admin.Request.SearchUsers)
 		requests.GET("/search-api-keys", h.Admin.Request.SearchAPIKeys)
+		requests.GET("/cleanup-tasks", h.Admin.Request.ListCleanupTasks)
+		requests.POST("/cleanup-tasks", h.Admin.Request.CreateCleanupTask)
+		requests.POST("/cleanup-tasks/:id/cancel", h.Admin.Request.CancelCleanupTask)
 	}
 }
 

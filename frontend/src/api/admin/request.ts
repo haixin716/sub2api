@@ -57,6 +57,80 @@ export async function searchAPIKeys(
   return data
 }
 
+// ==================== Cleanup Types ====================
+
+export interface RequestLogCleanupFilters {
+  start_time: string
+  end_time: string
+  user_id?: number
+  api_key_id?: number
+  account_id?: number
+  group_id?: number
+  model?: string | null
+  stream?: boolean | null
+  is_error?: boolean | null
+}
+
+export interface RequestLogCleanupTask {
+  id: number
+  status: string
+  filters: RequestLogCleanupFilters
+  created_by: number
+  deleted_rows: number
+  error_message?: string | null
+  canceled_by?: number | null
+  canceled_at?: string | null
+  started_at?: string | null
+  finished_at?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateRequestLogCleanupTaskRequest {
+  start_date: string
+  end_date: string
+  user_id?: number
+  api_key_id?: number
+  account_id?: number
+  group_id?: number
+  model?: string | null
+  stream?: boolean | null
+  is_error?: boolean | null
+  timezone?: string
+}
+
+/**
+ * 列出请求记录清理任务
+ */
+export async function listCleanupTasks(
+  params: { page?: number; page_size?: number },
+  options?: { signal?: AbortSignal }
+): Promise<PaginatedResponse<RequestLogCleanupTask>> {
+  const { data } = await apiClient.get<PaginatedResponse<RequestLogCleanupTask>>('/admin/requests/cleanup-tasks', {
+    params,
+    signal: options?.signal
+  })
+  return data
+}
+
+/**
+ * 创建请求记录清理任务
+ */
+export async function createCleanupTask(payload: CreateRequestLogCleanupTaskRequest): Promise<RequestLogCleanupTask> {
+  const { data } = await apiClient.post<RequestLogCleanupTask>('/admin/requests/cleanup-tasks', payload)
+  return data
+}
+
+/**
+ * 取消请求记录清理任务
+ */
+export async function cancelCleanupTask(taskId: number): Promise<{ id: number; status: string }> {
+  const { data } = await apiClient.post<{ id: number; status: string }>(
+    `/admin/requests/cleanup-tasks/${taskId}/cancel`
+  )
+  return data
+}
+
 /**
  * 导出为 CSV（前端实现）
  */

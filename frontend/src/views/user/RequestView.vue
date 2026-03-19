@@ -88,45 +88,11 @@
           <div class="flex flex-wrap items-end gap-4">
               <!-- API Key Filter -->
               <div class="min-w-[180px]">
-                <label class="input-label">API Key</label>
+                <label class="input-label">API 密钥</label>
                 <Select
                   v-model="filters.api_key_id"
                   :options="apiKeyOptions"
-                  placeholder="所有 API Key"
-                  @change="applyFilters"
-                />
-              </div>
-
-              <!-- Model Filter -->
-              <div class="min-w-[150px]">
-                <label class="input-label">模型</label>
-                <input
-                  v-model="filters.model"
-                  type="text"
-                  class="input"
-                  placeholder="输入模型名称"
-                  @keyup.enter="applyFilters"
-                />
-              </div>
-
-              <!-- Stream Filter -->
-              <div class="min-w-[120px]">
-                <label class="input-label">请求类型</label>
-                <Select
-                  v-model="filters.stream"
-                  :options="streamOptions"
-                  placeholder="全部"
-                  @change="applyFilters"
-                />
-              </div>
-
-              <!-- Error Filter -->
-              <div class="min-w-[120px]">
-                <label class="input-label">状态</label>
-                <Select
-                  v-model="filters.is_error"
-                  :options="errorOptions"
-                  placeholder="全部"
+                  placeholder="所有 API 密钥"
                   @change="applyFilters"
                 />
               </div>
@@ -163,6 +129,11 @@
             <code class="text-xs text-gray-600 dark:text-gray-400">{{ row.client_request_id.substring(0, 12) }}...</code>
           </template>
 
+          <template #cell-api_key="{ row }">
+            <span v-if="row.api_key" class="text-sm text-gray-900 dark:text-white">{{ row.api_key.name }}</span>
+            <span v-else class="text-sm text-gray-400">-</span>
+          </template>
+
           <template #cell-model="{ value }">
             <span class="font-medium text-gray-900 dark:text-white">{{ value }}</span>
           </template>
@@ -188,11 +159,16 @@
           </template>
 
           <template #cell-stream="{ row }">
-            <Icon
-              :name="row.stream ? 'bolt' : 'document'"
-              size="sm"
-              :class="row.stream ? 'text-purple-500' : 'text-gray-400'"
-            />
+            <span class="inline-flex items-center gap-1">
+              <Icon
+                :name="row.stream ? 'bolt' : 'document'"
+                size="sm"
+                :class="row.stream ? 'text-purple-500' : 'text-gray-400'"
+              />
+              <span :class="row.stream ? 'text-purple-600 dark:text-purple-400' : 'text-gray-500 dark:text-gray-400'" class="text-xs">
+                {{ row.stream ? '流式' : '普通' }}
+              </span>
+            </span>
           </template>
 
           <template #cell-duration_ms="{ row }">
@@ -242,7 +218,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { list, exportToCSV } from '@/api/request'
+import { keysAPI } from '@/api'
 import type { RequestLog } from '@/types/request'
+import type { ApiKey } from '@/types'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import DataTable from '@/components/common/DataTable.vue'
 import Pagination from '@/components/common/Pagination.vue'
@@ -260,13 +238,27 @@ const selectedRequest = ref<RequestLog | null>(null)
 // Filters
 const filters = ref({
   api_key_id: undefined as number | undefined,
-  model: '',
-  stream: undefined as boolean | undefined,
-  is_error: undefined as boolean | undefined,
 })
 
-const startDate = ref('')
-const endDate = ref('')
+// API Keys
+const apiKeys = ref<ApiKey[]>([])
+const apiKeyOptions = computed(() => [
+  { value: null, label: '所有 API 密钥' },
+  ...apiKeys.value.map(key => ({ value: key.id, label: key.name }))
+])
+
+// Initialize date range to last 7 days
+const getDefaultDateRange = () => {
+  const now = new Date()
+  const end = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const startD = new Date()
+  startD.setDate(startD.getDate() - 6)
+  const start = `${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, '0')}-${String(startD.getDate()).padStart(2, '0')}`
+  return { start, end }
+}
+const defaultRange = getDefaultDateRange()
+const startDate = ref(defaultRange.start)
+const endDate = ref(defaultRange.end)
 
 // Pagination
 const pagination = ref({
@@ -276,16 +268,7 @@ const pagination = ref({
   pages: 0,
 })
 
-// Options
-const apiKeyOptions = ref<Array<{ label: string; value: number }>>([])
-const streamOptions = [
-  { label: '流式', value: true },
-  { label: '非流式', value: false },
-]
-const errorOptions = [
-  { label: '成功', value: false },
-  { label: '错误', value: true },
-]
+// Options removed (model, stream, error filters no longer needed)
 
 // Computed
 const totalRequests = computed(() => pagination.value.total)
@@ -305,6 +288,7 @@ const avgDuration = computed(() => {
 // Table columns
 const columns = [
   { key: 'request_id', label: '请求 ID', width: '120px' },
+  { key: 'api_key', label: 'API 密钥', width: '150px' },
   { key: 'model', label: '模型', width: '180px' },
   { key: 'method_path', label: '方法 & 路径', width: '250px' },
   { key: 'status', label: '状态码', width: '80px' },
@@ -345,12 +329,10 @@ function applyFilters() {
 function resetFilters() {
   filters.value = {
     api_key_id: undefined,
-    model: '',
-    stream: undefined,
-    is_error: undefined,
   }
-  startDate.value = ''
-  endDate.value = ''
+  const range = getDefaultDateRange()
+  startDate.value = range.start
+  endDate.value = range.end
   applyFilters()
 }
 
@@ -413,8 +395,14 @@ function formatDateTime(dateStr: string): string {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   loadRequests()
-  // TODO: Load API key options
+  // Load API key options
+  try {
+    const response = await keysAPI.list(1, 100)
+    apiKeys.value = response.items
+  } catch (error) {
+    console.error('Failed to load API keys:', error)
+  }
 })
 </script>
