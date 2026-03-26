@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/Wei-Shaw/sub2api/ent/account"
 	"github.com/Wei-Shaw/sub2api/ent/apikey"
@@ -355,6 +356,135 @@ func (_u *GroupUpdate) ClearImagePrice4k() *GroupUpdate {
 	return _u
 }
 
+// SetSoraImagePrice360 sets the "sora_image_price_360" field.
+func (_u *GroupUpdate) SetSoraImagePrice360(v float64) *GroupUpdate {
+	_u.mutation.ResetSoraImagePrice360()
+	_u.mutation.SetSoraImagePrice360(v)
+	return _u
+}
+
+// SetNillableSoraImagePrice360 sets the "sora_image_price_360" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSoraImagePrice360(v *float64) *GroupUpdate {
+	if v != nil {
+		_u.SetSoraImagePrice360(*v)
+	}
+	return _u
+}
+
+// AddSoraImagePrice360 adds value to the "sora_image_price_360" field.
+func (_u *GroupUpdate) AddSoraImagePrice360(v float64) *GroupUpdate {
+	_u.mutation.AddSoraImagePrice360(v)
+	return _u
+}
+
+// ClearSoraImagePrice360 clears the value of the "sora_image_price_360" field.
+func (_u *GroupUpdate) ClearSoraImagePrice360() *GroupUpdate {
+	_u.mutation.ClearSoraImagePrice360()
+	return _u
+}
+
+// SetSoraImagePrice540 sets the "sora_image_price_540" field.
+func (_u *GroupUpdate) SetSoraImagePrice540(v float64) *GroupUpdate {
+	_u.mutation.ResetSoraImagePrice540()
+	_u.mutation.SetSoraImagePrice540(v)
+	return _u
+}
+
+// SetNillableSoraImagePrice540 sets the "sora_image_price_540" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSoraImagePrice540(v *float64) *GroupUpdate {
+	if v != nil {
+		_u.SetSoraImagePrice540(*v)
+	}
+	return _u
+}
+
+// AddSoraImagePrice540 adds value to the "sora_image_price_540" field.
+func (_u *GroupUpdate) AddSoraImagePrice540(v float64) *GroupUpdate {
+	_u.mutation.AddSoraImagePrice540(v)
+	return _u
+}
+
+// ClearSoraImagePrice540 clears the value of the "sora_image_price_540" field.
+func (_u *GroupUpdate) ClearSoraImagePrice540() *GroupUpdate {
+	_u.mutation.ClearSoraImagePrice540()
+	return _u
+}
+
+// SetSoraVideoPricePerRequest sets the "sora_video_price_per_request" field.
+func (_u *GroupUpdate) SetSoraVideoPricePerRequest(v float64) *GroupUpdate {
+	_u.mutation.ResetSoraVideoPricePerRequest()
+	_u.mutation.SetSoraVideoPricePerRequest(v)
+	return _u
+}
+
+// SetNillableSoraVideoPricePerRequest sets the "sora_video_price_per_request" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSoraVideoPricePerRequest(v *float64) *GroupUpdate {
+	if v != nil {
+		_u.SetSoraVideoPricePerRequest(*v)
+	}
+	return _u
+}
+
+// AddSoraVideoPricePerRequest adds value to the "sora_video_price_per_request" field.
+func (_u *GroupUpdate) AddSoraVideoPricePerRequest(v float64) *GroupUpdate {
+	_u.mutation.AddSoraVideoPricePerRequest(v)
+	return _u
+}
+
+// ClearSoraVideoPricePerRequest clears the value of the "sora_video_price_per_request" field.
+func (_u *GroupUpdate) ClearSoraVideoPricePerRequest() *GroupUpdate {
+	_u.mutation.ClearSoraVideoPricePerRequest()
+	return _u
+}
+
+// SetSoraVideoPricePerRequestHd sets the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdate) SetSoraVideoPricePerRequestHd(v float64) *GroupUpdate {
+	_u.mutation.ResetSoraVideoPricePerRequestHd()
+	_u.mutation.SetSoraVideoPricePerRequestHd(v)
+	return _u
+}
+
+// SetNillableSoraVideoPricePerRequestHd sets the "sora_video_price_per_request_hd" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSoraVideoPricePerRequestHd(v *float64) *GroupUpdate {
+	if v != nil {
+		_u.SetSoraVideoPricePerRequestHd(*v)
+	}
+	return _u
+}
+
+// AddSoraVideoPricePerRequestHd adds value to the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdate) AddSoraVideoPricePerRequestHd(v float64) *GroupUpdate {
+	_u.mutation.AddSoraVideoPricePerRequestHd(v)
+	return _u
+}
+
+// ClearSoraVideoPricePerRequestHd clears the value of the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdate) ClearSoraVideoPricePerRequestHd() *GroupUpdate {
+	_u.mutation.ClearSoraVideoPricePerRequestHd()
+	return _u
+}
+
+// SetSoraStorageQuotaBytes sets the "sora_storage_quota_bytes" field.
+func (_u *GroupUpdate) SetSoraStorageQuotaBytes(v int64) *GroupUpdate {
+	_u.mutation.ResetSoraStorageQuotaBytes()
+	_u.mutation.SetSoraStorageQuotaBytes(v)
+	return _u
+}
+
+// SetNillableSoraStorageQuotaBytes sets the "sora_storage_quota_bytes" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSoraStorageQuotaBytes(v *int64) *GroupUpdate {
+	if v != nil {
+		_u.SetSoraStorageQuotaBytes(*v)
+	}
+	return _u
+}
+
+// AddSoraStorageQuotaBytes adds value to the "sora_storage_quota_bytes" field.
+func (_u *GroupUpdate) AddSoraStorageQuotaBytes(v int64) *GroupUpdate {
+	_u.mutation.AddSoraStorageQuotaBytes(v)
+	return _u
+}
+
 // SetClaudeCodeOnly sets the "claude_code_only" field.
 func (_u *GroupUpdate) SetClaudeCodeOnly(v bool) *GroupUpdate {
 	_u.mutation.SetClaudeCodeOnly(v)
@@ -396,6 +526,33 @@ func (_u *GroupUpdate) ClearFallbackGroupID() *GroupUpdate {
 	return _u
 }
 
+// SetFallbackGroupIDOnInvalidRequest sets the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdate) SetFallbackGroupIDOnInvalidRequest(v int64) *GroupUpdate {
+	_u.mutation.ResetFallbackGroupIDOnInvalidRequest()
+	_u.mutation.SetFallbackGroupIDOnInvalidRequest(v)
+	return _u
+}
+
+// SetNillableFallbackGroupIDOnInvalidRequest sets the "fallback_group_id_on_invalid_request" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableFallbackGroupIDOnInvalidRequest(v *int64) *GroupUpdate {
+	if v != nil {
+		_u.SetFallbackGroupIDOnInvalidRequest(*v)
+	}
+	return _u
+}
+
+// AddFallbackGroupIDOnInvalidRequest adds value to the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdate) AddFallbackGroupIDOnInvalidRequest(v int64) *GroupUpdate {
+	_u.mutation.AddFallbackGroupIDOnInvalidRequest(v)
+	return _u
+}
+
+// ClearFallbackGroupIDOnInvalidRequest clears the value of the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdate) ClearFallbackGroupIDOnInvalidRequest() *GroupUpdate {
+	_u.mutation.ClearFallbackGroupIDOnInvalidRequest()
+	return _u
+}
+
 // SetModelRouting sets the "model_routing" field.
 func (_u *GroupUpdate) SetModelRouting(v map[string][]int64) *GroupUpdate {
 	_u.mutation.SetModelRouting(v)
@@ -418,6 +575,81 @@ func (_u *GroupUpdate) SetModelRoutingEnabled(v bool) *GroupUpdate {
 func (_u *GroupUpdate) SetNillableModelRoutingEnabled(v *bool) *GroupUpdate {
 	if v != nil {
 		_u.SetModelRoutingEnabled(*v)
+	}
+	return _u
+}
+
+// SetMcpXMLInject sets the "mcp_xml_inject" field.
+func (_u *GroupUpdate) SetMcpXMLInject(v bool) *GroupUpdate {
+	_u.mutation.SetMcpXMLInject(v)
+	return _u
+}
+
+// SetNillableMcpXMLInject sets the "mcp_xml_inject" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableMcpXMLInject(v *bool) *GroupUpdate {
+	if v != nil {
+		_u.SetMcpXMLInject(*v)
+	}
+	return _u
+}
+
+// SetSupportedModelScopes sets the "supported_model_scopes" field.
+func (_u *GroupUpdate) SetSupportedModelScopes(v []string) *GroupUpdate {
+	_u.mutation.SetSupportedModelScopes(v)
+	return _u
+}
+
+// AppendSupportedModelScopes appends value to the "supported_model_scopes" field.
+func (_u *GroupUpdate) AppendSupportedModelScopes(v []string) *GroupUpdate {
+	_u.mutation.AppendSupportedModelScopes(v)
+	return _u
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (_u *GroupUpdate) SetSortOrder(v int) *GroupUpdate {
+	_u.mutation.ResetSortOrder()
+	_u.mutation.SetSortOrder(v)
+	return _u
+}
+
+// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableSortOrder(v *int) *GroupUpdate {
+	if v != nil {
+		_u.SetSortOrder(*v)
+	}
+	return _u
+}
+
+// AddSortOrder adds value to the "sort_order" field.
+func (_u *GroupUpdate) AddSortOrder(v int) *GroupUpdate {
+	_u.mutation.AddSortOrder(v)
+	return _u
+}
+
+// SetAllowMessagesDispatch sets the "allow_messages_dispatch" field.
+func (_u *GroupUpdate) SetAllowMessagesDispatch(v bool) *GroupUpdate {
+	_u.mutation.SetAllowMessagesDispatch(v)
+	return _u
+}
+
+// SetNillableAllowMessagesDispatch sets the "allow_messages_dispatch" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableAllowMessagesDispatch(v *bool) *GroupUpdate {
+	if v != nil {
+		_u.SetAllowMessagesDispatch(*v)
+	}
+	return _u
+}
+
+// SetDefaultMappedModel sets the "default_mapped_model" field.
+func (_u *GroupUpdate) SetDefaultMappedModel(v string) *GroupUpdate {
+	_u.mutation.SetDefaultMappedModel(v)
+	return _u
+}
+
+// SetNillableDefaultMappedModel sets the "default_mapped_model" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableDefaultMappedModel(v *string) *GroupUpdate {
+	if v != nil {
+		_u.SetDefaultMappedModel(*v)
 	}
 	return _u
 }
@@ -743,6 +975,11 @@ func (_u *GroupUpdate) check() error {
 			return &ValidationError{Name: "subscription_type", err: fmt.Errorf(`ent: validator failed for field "Group.subscription_type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DefaultMappedModel(); ok {
+		if err := group.DefaultMappedModelValidator(v); err != nil {
+			return &ValidationError{Name: "default_mapped_model", err: fmt.Errorf(`ent: validator failed for field "Group.default_mapped_model": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -854,6 +1091,48 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ImagePrice4kCleared() {
 		_spec.ClearField(group.FieldImagePrice4k, field.TypeFloat64)
 	}
+	if value, ok := _u.mutation.SoraImagePrice360(); ok {
+		_spec.SetField(group.FieldSoraImagePrice360, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraImagePrice360(); ok {
+		_spec.AddField(group.FieldSoraImagePrice360, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraImagePrice360Cleared() {
+		_spec.ClearField(group.FieldSoraImagePrice360, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraImagePrice540(); ok {
+		_spec.SetField(group.FieldSoraImagePrice540, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraImagePrice540(); ok {
+		_spec.AddField(group.FieldSoraImagePrice540, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraImagePrice540Cleared() {
+		_spec.ClearField(group.FieldSoraImagePrice540, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraVideoPricePerRequest(); ok {
+		_spec.SetField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraVideoPricePerRequest(); ok {
+		_spec.AddField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraVideoPricePerRequestCleared() {
+		_spec.ClearField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraVideoPricePerRequestHd(); ok {
+		_spec.SetField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraVideoPricePerRequestHd(); ok {
+		_spec.AddField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraVideoPricePerRequestHdCleared() {
+		_spec.ClearField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraStorageQuotaBytes(); ok {
+		_spec.SetField(group.FieldSoraStorageQuotaBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraStorageQuotaBytes(); ok {
+		_spec.AddField(group.FieldSoraStorageQuotaBytes, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.ClaudeCodeOnly(); ok {
 		_spec.SetField(group.FieldClaudeCodeOnly, field.TypeBool, value)
 	}
@@ -866,6 +1145,15 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.FallbackGroupIDCleared() {
 		_spec.ClearField(group.FieldFallbackGroupID, field.TypeInt64)
 	}
+	if value, ok := _u.mutation.FallbackGroupIDOnInvalidRequest(); ok {
+		_spec.SetField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFallbackGroupIDOnInvalidRequest(); ok {
+		_spec.AddField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64, value)
+	}
+	if _u.mutation.FallbackGroupIDOnInvalidRequestCleared() {
+		_spec.ClearField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64)
+	}
 	if value, ok := _u.mutation.ModelRouting(); ok {
 		_spec.SetField(group.FieldModelRouting, field.TypeJSON, value)
 	}
@@ -874,6 +1162,29 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.ModelRoutingEnabled(); ok {
 		_spec.SetField(group.FieldModelRoutingEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.McpXMLInject(); ok {
+		_spec.SetField(group.FieldMcpXMLInject, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SupportedModelScopes(); ok {
+		_spec.SetField(group.FieldSupportedModelScopes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSupportedModelScopes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, group.FieldSupportedModelScopes, value)
+		})
+	}
+	if value, ok := _u.mutation.SortOrder(); ok {
+		_spec.SetField(group.FieldSortOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSortOrder(); ok {
+		_spec.AddField(group.FieldSortOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AllowMessagesDispatch(); ok {
+		_spec.SetField(group.FieldAllowMessagesDispatch, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.DefaultMappedModel(); ok {
+		_spec.SetField(group.FieldDefaultMappedModel, field.TypeString, value)
 	}
 	if _u.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1554,6 +1865,135 @@ func (_u *GroupUpdateOne) ClearImagePrice4k() *GroupUpdateOne {
 	return _u
 }
 
+// SetSoraImagePrice360 sets the "sora_image_price_360" field.
+func (_u *GroupUpdateOne) SetSoraImagePrice360(v float64) *GroupUpdateOne {
+	_u.mutation.ResetSoraImagePrice360()
+	_u.mutation.SetSoraImagePrice360(v)
+	return _u
+}
+
+// SetNillableSoraImagePrice360 sets the "sora_image_price_360" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSoraImagePrice360(v *float64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSoraImagePrice360(*v)
+	}
+	return _u
+}
+
+// AddSoraImagePrice360 adds value to the "sora_image_price_360" field.
+func (_u *GroupUpdateOne) AddSoraImagePrice360(v float64) *GroupUpdateOne {
+	_u.mutation.AddSoraImagePrice360(v)
+	return _u
+}
+
+// ClearSoraImagePrice360 clears the value of the "sora_image_price_360" field.
+func (_u *GroupUpdateOne) ClearSoraImagePrice360() *GroupUpdateOne {
+	_u.mutation.ClearSoraImagePrice360()
+	return _u
+}
+
+// SetSoraImagePrice540 sets the "sora_image_price_540" field.
+func (_u *GroupUpdateOne) SetSoraImagePrice540(v float64) *GroupUpdateOne {
+	_u.mutation.ResetSoraImagePrice540()
+	_u.mutation.SetSoraImagePrice540(v)
+	return _u
+}
+
+// SetNillableSoraImagePrice540 sets the "sora_image_price_540" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSoraImagePrice540(v *float64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSoraImagePrice540(*v)
+	}
+	return _u
+}
+
+// AddSoraImagePrice540 adds value to the "sora_image_price_540" field.
+func (_u *GroupUpdateOne) AddSoraImagePrice540(v float64) *GroupUpdateOne {
+	_u.mutation.AddSoraImagePrice540(v)
+	return _u
+}
+
+// ClearSoraImagePrice540 clears the value of the "sora_image_price_540" field.
+func (_u *GroupUpdateOne) ClearSoraImagePrice540() *GroupUpdateOne {
+	_u.mutation.ClearSoraImagePrice540()
+	return _u
+}
+
+// SetSoraVideoPricePerRequest sets the "sora_video_price_per_request" field.
+func (_u *GroupUpdateOne) SetSoraVideoPricePerRequest(v float64) *GroupUpdateOne {
+	_u.mutation.ResetSoraVideoPricePerRequest()
+	_u.mutation.SetSoraVideoPricePerRequest(v)
+	return _u
+}
+
+// SetNillableSoraVideoPricePerRequest sets the "sora_video_price_per_request" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSoraVideoPricePerRequest(v *float64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSoraVideoPricePerRequest(*v)
+	}
+	return _u
+}
+
+// AddSoraVideoPricePerRequest adds value to the "sora_video_price_per_request" field.
+func (_u *GroupUpdateOne) AddSoraVideoPricePerRequest(v float64) *GroupUpdateOne {
+	_u.mutation.AddSoraVideoPricePerRequest(v)
+	return _u
+}
+
+// ClearSoraVideoPricePerRequest clears the value of the "sora_video_price_per_request" field.
+func (_u *GroupUpdateOne) ClearSoraVideoPricePerRequest() *GroupUpdateOne {
+	_u.mutation.ClearSoraVideoPricePerRequest()
+	return _u
+}
+
+// SetSoraVideoPricePerRequestHd sets the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdateOne) SetSoraVideoPricePerRequestHd(v float64) *GroupUpdateOne {
+	_u.mutation.ResetSoraVideoPricePerRequestHd()
+	_u.mutation.SetSoraVideoPricePerRequestHd(v)
+	return _u
+}
+
+// SetNillableSoraVideoPricePerRequestHd sets the "sora_video_price_per_request_hd" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSoraVideoPricePerRequestHd(v *float64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSoraVideoPricePerRequestHd(*v)
+	}
+	return _u
+}
+
+// AddSoraVideoPricePerRequestHd adds value to the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdateOne) AddSoraVideoPricePerRequestHd(v float64) *GroupUpdateOne {
+	_u.mutation.AddSoraVideoPricePerRequestHd(v)
+	return _u
+}
+
+// ClearSoraVideoPricePerRequestHd clears the value of the "sora_video_price_per_request_hd" field.
+func (_u *GroupUpdateOne) ClearSoraVideoPricePerRequestHd() *GroupUpdateOne {
+	_u.mutation.ClearSoraVideoPricePerRequestHd()
+	return _u
+}
+
+// SetSoraStorageQuotaBytes sets the "sora_storage_quota_bytes" field.
+func (_u *GroupUpdateOne) SetSoraStorageQuotaBytes(v int64) *GroupUpdateOne {
+	_u.mutation.ResetSoraStorageQuotaBytes()
+	_u.mutation.SetSoraStorageQuotaBytes(v)
+	return _u
+}
+
+// SetNillableSoraStorageQuotaBytes sets the "sora_storage_quota_bytes" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSoraStorageQuotaBytes(v *int64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSoraStorageQuotaBytes(*v)
+	}
+	return _u
+}
+
+// AddSoraStorageQuotaBytes adds value to the "sora_storage_quota_bytes" field.
+func (_u *GroupUpdateOne) AddSoraStorageQuotaBytes(v int64) *GroupUpdateOne {
+	_u.mutation.AddSoraStorageQuotaBytes(v)
+	return _u
+}
+
 // SetClaudeCodeOnly sets the "claude_code_only" field.
 func (_u *GroupUpdateOne) SetClaudeCodeOnly(v bool) *GroupUpdateOne {
 	_u.mutation.SetClaudeCodeOnly(v)
@@ -1595,6 +2035,33 @@ func (_u *GroupUpdateOne) ClearFallbackGroupID() *GroupUpdateOne {
 	return _u
 }
 
+// SetFallbackGroupIDOnInvalidRequest sets the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdateOne) SetFallbackGroupIDOnInvalidRequest(v int64) *GroupUpdateOne {
+	_u.mutation.ResetFallbackGroupIDOnInvalidRequest()
+	_u.mutation.SetFallbackGroupIDOnInvalidRequest(v)
+	return _u
+}
+
+// SetNillableFallbackGroupIDOnInvalidRequest sets the "fallback_group_id_on_invalid_request" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableFallbackGroupIDOnInvalidRequest(v *int64) *GroupUpdateOne {
+	if v != nil {
+		_u.SetFallbackGroupIDOnInvalidRequest(*v)
+	}
+	return _u
+}
+
+// AddFallbackGroupIDOnInvalidRequest adds value to the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdateOne) AddFallbackGroupIDOnInvalidRequest(v int64) *GroupUpdateOne {
+	_u.mutation.AddFallbackGroupIDOnInvalidRequest(v)
+	return _u
+}
+
+// ClearFallbackGroupIDOnInvalidRequest clears the value of the "fallback_group_id_on_invalid_request" field.
+func (_u *GroupUpdateOne) ClearFallbackGroupIDOnInvalidRequest() *GroupUpdateOne {
+	_u.mutation.ClearFallbackGroupIDOnInvalidRequest()
+	return _u
+}
+
 // SetModelRouting sets the "model_routing" field.
 func (_u *GroupUpdateOne) SetModelRouting(v map[string][]int64) *GroupUpdateOne {
 	_u.mutation.SetModelRouting(v)
@@ -1617,6 +2084,81 @@ func (_u *GroupUpdateOne) SetModelRoutingEnabled(v bool) *GroupUpdateOne {
 func (_u *GroupUpdateOne) SetNillableModelRoutingEnabled(v *bool) *GroupUpdateOne {
 	if v != nil {
 		_u.SetModelRoutingEnabled(*v)
+	}
+	return _u
+}
+
+// SetMcpXMLInject sets the "mcp_xml_inject" field.
+func (_u *GroupUpdateOne) SetMcpXMLInject(v bool) *GroupUpdateOne {
+	_u.mutation.SetMcpXMLInject(v)
+	return _u
+}
+
+// SetNillableMcpXMLInject sets the "mcp_xml_inject" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableMcpXMLInject(v *bool) *GroupUpdateOne {
+	if v != nil {
+		_u.SetMcpXMLInject(*v)
+	}
+	return _u
+}
+
+// SetSupportedModelScopes sets the "supported_model_scopes" field.
+func (_u *GroupUpdateOne) SetSupportedModelScopes(v []string) *GroupUpdateOne {
+	_u.mutation.SetSupportedModelScopes(v)
+	return _u
+}
+
+// AppendSupportedModelScopes appends value to the "supported_model_scopes" field.
+func (_u *GroupUpdateOne) AppendSupportedModelScopes(v []string) *GroupUpdateOne {
+	_u.mutation.AppendSupportedModelScopes(v)
+	return _u
+}
+
+// SetSortOrder sets the "sort_order" field.
+func (_u *GroupUpdateOne) SetSortOrder(v int) *GroupUpdateOne {
+	_u.mutation.ResetSortOrder()
+	_u.mutation.SetSortOrder(v)
+	return _u
+}
+
+// SetNillableSortOrder sets the "sort_order" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableSortOrder(v *int) *GroupUpdateOne {
+	if v != nil {
+		_u.SetSortOrder(*v)
+	}
+	return _u
+}
+
+// AddSortOrder adds value to the "sort_order" field.
+func (_u *GroupUpdateOne) AddSortOrder(v int) *GroupUpdateOne {
+	_u.mutation.AddSortOrder(v)
+	return _u
+}
+
+// SetAllowMessagesDispatch sets the "allow_messages_dispatch" field.
+func (_u *GroupUpdateOne) SetAllowMessagesDispatch(v bool) *GroupUpdateOne {
+	_u.mutation.SetAllowMessagesDispatch(v)
+	return _u
+}
+
+// SetNillableAllowMessagesDispatch sets the "allow_messages_dispatch" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableAllowMessagesDispatch(v *bool) *GroupUpdateOne {
+	if v != nil {
+		_u.SetAllowMessagesDispatch(*v)
+	}
+	return _u
+}
+
+// SetDefaultMappedModel sets the "default_mapped_model" field.
+func (_u *GroupUpdateOne) SetDefaultMappedModel(v string) *GroupUpdateOne {
+	_u.mutation.SetDefaultMappedModel(v)
+	return _u
+}
+
+// SetNillableDefaultMappedModel sets the "default_mapped_model" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableDefaultMappedModel(v *string) *GroupUpdateOne {
+	if v != nil {
+		_u.SetDefaultMappedModel(*v)
 	}
 	return _u
 }
@@ -1955,6 +2497,11 @@ func (_u *GroupUpdateOne) check() error {
 			return &ValidationError{Name: "subscription_type", err: fmt.Errorf(`ent: validator failed for field "Group.subscription_type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DefaultMappedModel(); ok {
+		if err := group.DefaultMappedModelValidator(v); err != nil {
+			return &ValidationError{Name: "default_mapped_model", err: fmt.Errorf(`ent: validator failed for field "Group.default_mapped_model": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -2083,6 +2630,48 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	if _u.mutation.ImagePrice4kCleared() {
 		_spec.ClearField(group.FieldImagePrice4k, field.TypeFloat64)
 	}
+	if value, ok := _u.mutation.SoraImagePrice360(); ok {
+		_spec.SetField(group.FieldSoraImagePrice360, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraImagePrice360(); ok {
+		_spec.AddField(group.FieldSoraImagePrice360, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraImagePrice360Cleared() {
+		_spec.ClearField(group.FieldSoraImagePrice360, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraImagePrice540(); ok {
+		_spec.SetField(group.FieldSoraImagePrice540, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraImagePrice540(); ok {
+		_spec.AddField(group.FieldSoraImagePrice540, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraImagePrice540Cleared() {
+		_spec.ClearField(group.FieldSoraImagePrice540, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraVideoPricePerRequest(); ok {
+		_spec.SetField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraVideoPricePerRequest(); ok {
+		_spec.AddField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraVideoPricePerRequestCleared() {
+		_spec.ClearField(group.FieldSoraVideoPricePerRequest, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraVideoPricePerRequestHd(); ok {
+		_spec.SetField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraVideoPricePerRequestHd(); ok {
+		_spec.AddField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64, value)
+	}
+	if _u.mutation.SoraVideoPricePerRequestHdCleared() {
+		_spec.ClearField(group.FieldSoraVideoPricePerRequestHd, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.SoraStorageQuotaBytes(); ok {
+		_spec.SetField(group.FieldSoraStorageQuotaBytes, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedSoraStorageQuotaBytes(); ok {
+		_spec.AddField(group.FieldSoraStorageQuotaBytes, field.TypeInt64, value)
+	}
 	if value, ok := _u.mutation.ClaudeCodeOnly(); ok {
 		_spec.SetField(group.FieldClaudeCodeOnly, field.TypeBool, value)
 	}
@@ -2095,6 +2684,15 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	if _u.mutation.FallbackGroupIDCleared() {
 		_spec.ClearField(group.FieldFallbackGroupID, field.TypeInt64)
 	}
+	if value, ok := _u.mutation.FallbackGroupIDOnInvalidRequest(); ok {
+		_spec.SetField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64, value)
+	}
+	if value, ok := _u.mutation.AddedFallbackGroupIDOnInvalidRequest(); ok {
+		_spec.AddField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64, value)
+	}
+	if _u.mutation.FallbackGroupIDOnInvalidRequestCleared() {
+		_spec.ClearField(group.FieldFallbackGroupIDOnInvalidRequest, field.TypeInt64)
+	}
 	if value, ok := _u.mutation.ModelRouting(); ok {
 		_spec.SetField(group.FieldModelRouting, field.TypeJSON, value)
 	}
@@ -2103,6 +2701,29 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	}
 	if value, ok := _u.mutation.ModelRoutingEnabled(); ok {
 		_spec.SetField(group.FieldModelRoutingEnabled, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.McpXMLInject(); ok {
+		_spec.SetField(group.FieldMcpXMLInject, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.SupportedModelScopes(); ok {
+		_spec.SetField(group.FieldSupportedModelScopes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSupportedModelScopes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, group.FieldSupportedModelScopes, value)
+		})
+	}
+	if value, ok := _u.mutation.SortOrder(); ok {
+		_spec.SetField(group.FieldSortOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedSortOrder(); ok {
+		_spec.AddField(group.FieldSortOrder, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AllowMessagesDispatch(); ok {
+		_spec.SetField(group.FieldAllowMessagesDispatch, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.DefaultMappedModel(); ok {
+		_spec.SetField(group.FieldDefaultMappedModel, field.TypeString, value)
 	}
 	if _u.mutation.APIKeysCleared() {
 		edge := &sqlgraph.EdgeSpec{

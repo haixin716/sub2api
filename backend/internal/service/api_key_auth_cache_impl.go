@@ -6,8 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/rand"
-	"sync"
+	"math/rand/v2"
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
@@ -22,12 +21,6 @@ type apiKeyAuthCacheConfig struct {
 	jitterPercent int
 	singleflight  bool
 }
-
-var (
-	jitterRandMu sync.Mutex
-	// 认证缓存抖动使用独立随机源，避免全局 Seed
-	jitterRand = rand.New(rand.NewSource(time.Now().UnixNano()))
-)
 
 func newAPIKeyAuthCacheConfig(cfg *config.Config) apiKeyAuthCacheConfig {
 	if cfg == nil {
@@ -56,6 +49,8 @@ func (c apiKeyAuthCacheConfig) negativeEnabled() bool {
 	return c.negativeTTL > 0
 }
 
+// jitterTTL 为缓存 TTL 添加抖动，避免多个请求在同一时刻同时过期触发集中回源。
+// 这里直接使用 rand/v2 的顶层函数：并发安全，无需全局互斥锁。
 func (c apiKeyAuthCacheConfig) jitterTTL(ttl time.Duration) time.Duration {
 	if ttl <= 0 {
 		return ttl
@@ -68,9 +63,7 @@ func (c apiKeyAuthCacheConfig) jitterTTL(ttl time.Duration) time.Duration {
 		percent = 100
 	}
 	delta := float64(percent) / 100
-	jitterRandMu.Lock()
-	randVal := jitterRand.Float64()
-	jitterRandMu.Unlock()
+	randVal := rand.Float64()
 	factor := 1 - delta + randVal*(2*delta)
 	if factor <= 0 {
 		return ttl
@@ -213,6 +206,12 @@ func (s *APIKeyService) snapshotFromAPIKey(apiKey *APIKey) *APIKeyAuthSnapshot {
 		Status:      apiKey.Status,
 		IPWhitelist: apiKey.IPWhitelist,
 		IPBlacklist: apiKey.IPBlacklist,
+		Quota:       apiKey.Quota,
+		QuotaUsed:   apiKey.QuotaUsed,
+		ExpiresAt:   apiKey.ExpiresAt,
+		RateLimit5h: apiKey.RateLimit5h,
+		RateLimit1d: apiKey.RateLimit1d,
+		RateLimit7d: apiKey.RateLimit7d,
 		User: APIKeyAuthUserSnapshot{
 			ID:          apiKey.User.ID,
 			Status:      apiKey.User.Status,
@@ -223,22 +222,31 @@ func (s *APIKeyService) snapshotFromAPIKey(apiKey *APIKey) *APIKeyAuthSnapshot {
 	}
 	if apiKey.Group != nil {
 		snapshot.Group = &APIKeyAuthGroupSnapshot{
-			ID:                  apiKey.Group.ID,
-			Name:                apiKey.Group.Name,
-			Platform:            apiKey.Group.Platform,
-			Status:              apiKey.Group.Status,
-			SubscriptionType:    apiKey.Group.SubscriptionType,
-			RateMultiplier:      apiKey.Group.RateMultiplier,
-			DailyLimitUSD:       apiKey.Group.DailyLimitUSD,
-			WeeklyLimitUSD:      apiKey.Group.WeeklyLimitUSD,
-			MonthlyLimitUSD:     apiKey.Group.MonthlyLimitUSD,
-			ImagePrice1K:        apiKey.Group.ImagePrice1K,
-			ImagePrice2K:        apiKey.Group.ImagePrice2K,
-			ImagePrice4K:        apiKey.Group.ImagePrice4K,
-			ClaudeCodeOnly:      apiKey.Group.ClaudeCodeOnly,
-			FallbackGroupID:     apiKey.Group.FallbackGroupID,
-			ModelRouting:        apiKey.Group.ModelRouting,
-			ModelRoutingEnabled: apiKey.Group.ModelRoutingEnabled,
+			ID:                              apiKey.Group.ID,
+			Name:                            apiKey.Group.Name,
+			Platform:                        apiKey.Group.Platform,
+			Status:                          apiKey.Group.Status,
+			SubscriptionType:                apiKey.Group.SubscriptionType,
+			RateMultiplier:                  apiKey.Group.RateMultiplier,
+			DailyLimitUSD:                   apiKey.Group.DailyLimitUSD,
+			WeeklyLimitUSD:                  apiKey.Group.WeeklyLimitUSD,
+			MonthlyLimitUSD:                 apiKey.Group.MonthlyLimitUSD,
+			ImagePrice1K:                    apiKey.Group.ImagePrice1K,
+			ImagePrice2K:                    apiKey.Group.ImagePrice2K,
+			ImagePrice4K:                    apiKey.Group.ImagePrice4K,
+			SoraImagePrice360:               apiKey.Group.SoraImagePrice360,
+			SoraImagePrice540:               apiKey.Group.SoraImagePrice540,
+			SoraVideoPricePerRequest:        apiKey.Group.SoraVideoPricePerRequest,
+			SoraVideoPricePerRequestHD:      apiKey.Group.SoraVideoPricePerRequestHD,
+			ClaudeCodeOnly:                  apiKey.Group.ClaudeCodeOnly,
+			FallbackGroupID:                 apiKey.Group.FallbackGroupID,
+			FallbackGroupIDOnInvalidRequest: apiKey.Group.FallbackGroupIDOnInvalidRequest,
+			ModelRouting:                    apiKey.Group.ModelRouting,
+			ModelRoutingEnabled:             apiKey.Group.ModelRoutingEnabled,
+			MCPXMLInject:                    apiKey.Group.MCPXMLInject,
+			SupportedModelScopes:            apiKey.Group.SupportedModelScopes,
+			AllowMessagesDispatch:           apiKey.Group.AllowMessagesDispatch,
+			DefaultMappedModel:              apiKey.Group.DefaultMappedModel,
 		}
 	}
 	return snapshot
@@ -256,6 +264,12 @@ func (s *APIKeyService) snapshotToAPIKey(key string, snapshot *APIKeyAuthSnapsho
 		Status:      snapshot.Status,
 		IPWhitelist: snapshot.IPWhitelist,
 		IPBlacklist: snapshot.IPBlacklist,
+		Quota:       snapshot.Quota,
+		QuotaUsed:   snapshot.QuotaUsed,
+		ExpiresAt:   snapshot.ExpiresAt,
+		RateLimit5h: snapshot.RateLimit5h,
+		RateLimit1d: snapshot.RateLimit1d,
+		RateLimit7d: snapshot.RateLimit7d,
 		User: &User{
 			ID:          snapshot.User.ID,
 			Status:      snapshot.User.Status,
@@ -266,24 +280,34 @@ func (s *APIKeyService) snapshotToAPIKey(key string, snapshot *APIKeyAuthSnapsho
 	}
 	if snapshot.Group != nil {
 		apiKey.Group = &Group{
-			ID:                  snapshot.Group.ID,
-			Name:                snapshot.Group.Name,
-			Platform:            snapshot.Group.Platform,
-			Status:              snapshot.Group.Status,
-			Hydrated:            true,
-			SubscriptionType:    snapshot.Group.SubscriptionType,
-			RateMultiplier:      snapshot.Group.RateMultiplier,
-			DailyLimitUSD:       snapshot.Group.DailyLimitUSD,
-			WeeklyLimitUSD:      snapshot.Group.WeeklyLimitUSD,
-			MonthlyLimitUSD:     snapshot.Group.MonthlyLimitUSD,
-			ImagePrice1K:        snapshot.Group.ImagePrice1K,
-			ImagePrice2K:        snapshot.Group.ImagePrice2K,
-			ImagePrice4K:        snapshot.Group.ImagePrice4K,
-			ClaudeCodeOnly:      snapshot.Group.ClaudeCodeOnly,
-			FallbackGroupID:     snapshot.Group.FallbackGroupID,
-			ModelRouting:        snapshot.Group.ModelRouting,
-			ModelRoutingEnabled: snapshot.Group.ModelRoutingEnabled,
+			ID:                              snapshot.Group.ID,
+			Name:                            snapshot.Group.Name,
+			Platform:                        snapshot.Group.Platform,
+			Status:                          snapshot.Group.Status,
+			Hydrated:                        true,
+			SubscriptionType:                snapshot.Group.SubscriptionType,
+			RateMultiplier:                  snapshot.Group.RateMultiplier,
+			DailyLimitUSD:                   snapshot.Group.DailyLimitUSD,
+			WeeklyLimitUSD:                  snapshot.Group.WeeklyLimitUSD,
+			MonthlyLimitUSD:                 snapshot.Group.MonthlyLimitUSD,
+			ImagePrice1K:                    snapshot.Group.ImagePrice1K,
+			ImagePrice2K:                    snapshot.Group.ImagePrice2K,
+			ImagePrice4K:                    snapshot.Group.ImagePrice4K,
+			SoraImagePrice360:               snapshot.Group.SoraImagePrice360,
+			SoraImagePrice540:               snapshot.Group.SoraImagePrice540,
+			SoraVideoPricePerRequest:        snapshot.Group.SoraVideoPricePerRequest,
+			SoraVideoPricePerRequestHD:      snapshot.Group.SoraVideoPricePerRequestHD,
+			ClaudeCodeOnly:                  snapshot.Group.ClaudeCodeOnly,
+			FallbackGroupID:                 snapshot.Group.FallbackGroupID,
+			FallbackGroupIDOnInvalidRequest: snapshot.Group.FallbackGroupIDOnInvalidRequest,
+			ModelRouting:                    snapshot.Group.ModelRouting,
+			ModelRoutingEnabled:             snapshot.Group.ModelRoutingEnabled,
+			MCPXMLInject:                    snapshot.Group.MCPXMLInject,
+			SupportedModelScopes:            snapshot.Group.SupportedModelScopes,
+			AllowMessagesDispatch:           snapshot.Group.AllowMessagesDispatch,
+			DefaultMappedModel:              snapshot.Group.DefaultMappedModel,
 		}
 	}
+	s.compileAPIKeyIPRules(apiKey)
 	return apiKey
 }

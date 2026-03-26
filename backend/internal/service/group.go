@@ -26,9 +26,20 @@ type Group struct {
 	ImagePrice2K *float64
 	ImagePrice4K *float64
 
+	// Sora 按次计费配置（阶段 1）
+	SoraImagePrice360          *float64
+	SoraImagePrice540          *float64
+	SoraVideoPricePerRequest   *float64
+	SoraVideoPricePerRequestHD *float64
+
+	// Sora 存储配额
+	SoraStorageQuotaBytes int64
+
 	// Claude Code 客户端限制
 	ClaudeCodeOnly  bool
 	FallbackGroupID *int64
+	// 无效请求兜底分组（仅 anthropic 平台使用）
+	FallbackGroupIDOnInvalidRequest *int64
 
 	// 模型路由配置
 	// key: 模型匹配模式（支持 * 通配符，如 "claude-opus-*"）
@@ -36,11 +47,27 @@ type Group struct {
 	ModelRouting        map[string][]int64
 	ModelRoutingEnabled bool
 
+	// MCP XML 协议注入开关（仅 antigravity 平台使用）
+	MCPXMLInject bool
+
+	// 支持的模型系列（仅 antigravity 平台使用）
+	// 可选值: claude, gemini_text, gemini_image
+	SupportedModelScopes []string
+
+	// 分组排序
+	SortOrder int
+
+	// OpenAI Messages 调度配置（仅 openai 平台使用）
+	AllowMessagesDispatch bool
+	DefaultMappedModel    string
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	AccountGroups []AccountGroup
-	AccountCount  int64
+	AccountGroups           []AccountGroup
+	AccountCount            int64
+	ActiveAccountCount      int64
+	RateLimitedAccountCount int64
 }
 
 func (g *Group) IsActive() bool {
@@ -80,6 +107,18 @@ func (g *Group) GetImagePrice(imageSize string) *float64 {
 	default:
 		// 未知尺寸默认按 2K 计费
 		return g.ImagePrice2K
+	}
+}
+
+// GetSoraImagePrice 根据 Sora 图片尺寸返回价格（360/540）
+func (g *Group) GetSoraImagePrice(imageSize string) *float64 {
+	switch imageSize {
+	case "360":
+		return g.SoraImagePrice360
+	case "540":
+		return g.SoraImagePrice540
+	default:
+		return g.SoraImagePrice360
 	}
 }
 

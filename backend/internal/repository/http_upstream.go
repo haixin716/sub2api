@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"compress/flate"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -13,7 +15,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/andybalholm/brotli"
+
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/proxyurl"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/proxyutil"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/tlsfingerprint"
 	"github.com/Wei-Shaw/sub2api/internal/service"
@@ -142,6 +147,9 @@ func (s *httpUpstreamService) Do(req *http.Request, proxyURL string, accountID i
 		return nil, err
 	}
 
+	// 如果上游返回了压缩内容，解压后再交给业务层
+	decompressResponseBody(resp)
+
 	// 包装响应体，在关闭时自动减少计数并更新时间戳
 	// 这确保了流式响应（如 SSE）在完全读取前不会被淘汰
 	resp.Body = wrapTrackedBody(resp.Body, func() {
@@ -217,6 +225,9 @@ func (s *httpUpstreamService) DoWithTLS(req *http.Request, proxyURL string, acco
 
 	slog.Debug("tls_fingerprint_request_success", "account_id", accountID, "status", resp.StatusCode)
 
+	// 如果上游返回了压缩内容，解压后再交给业务层
+	decompressResponseBody(resp)
+
 	// 包装响应体，在关闭时自动减少计数并更新时间戳
 	resp.Body = wrapTrackedBody(resp.Body, func() {
 		atomic.AddInt64(&entry.inFlight, -1)
@@ -235,7 +246,10 @@ func (s *httpUpstreamService) acquireClientWithTLS(proxyURL string, accountID in
 // TLS 指纹客户端使用独立的缓存键，与普通客户端隔离
 func (s *httpUpstreamService) getClientEntryWithTLS(proxyURL string, accountID int64, accountConcurrency int, profile *tlsfingerprint.Profile, markInFlight bool, enforceLimit bool) (*upstreamClientEntry, error) {
 	isolation := s.getIsolationMode()
-	proxyKey, parsedProxy := normalizeProxyURL(proxyURL)
+	proxyKey, parsedProxy, err := normalizeProxyURL(proxyURL)
+	if err != nil {
+		return nil, err
+	}
 	// TLS 指纹客户端使用独立的缓存键，加 "tls:" 前缀
 	cacheKey := "tls:" + buildCacheKey(isolation, proxyKey, accountID)
 	poolKey := s.buildPoolKey(isolation, accountConcurrency) + ":tls"
@@ -373,9 +387,8 @@ func (s *httpUpstreamService) acquireClient(proxyURL string, accountID int64, ac
 //   - proxy: 按代理地址隔离，同一代理共享客户端
 //   - account: 按账户隔离，同一账户共享客户端（代理变更时重建）
 //   - account_proxy: 按账户+代理组合隔离，最细粒度
-func (s *httpUpstreamService) getOrCreateClient(proxyURL string, accountID int64, accountConcurrency int) *upstreamClientEntry {
-	entry, _ := s.getClientEntry(proxyURL, accountID, accountConcurrency, false, false)
-	return entry
+func (s *httpUpstreamService) getOrCreateClient(proxyURL string, accountID int64, accountConcurrency int) (*upstreamClientEntry, error) {
+	return s.getClientEntry(proxyURL, accountID, accountConcurrency, false, false)
 }
 
 // getClientEntry 获取或创建客户端条目
@@ -385,7 +398,10 @@ func (s *httpUpstreamService) getClientEntry(proxyURL string, accountID int64, a
 	// 获取隔离模式
 	isolation := s.getIsolationMode()
 	// 标准化代理 URL 并解析
-	proxyKey, parsedProxy := normalizeProxyURL(proxyURL)
+	proxyKey, parsedProxy, err := normalizeProxyURL(proxyURL)
+	if err != nil {
+		return nil, err
+	}
 	// 构建缓存键（根据隔离策略不同）
 	cacheKey := buildCacheKey(isolation, proxyKey, accountID)
 	// 构建连接池配置键（用于检测配置变更）
@@ -680,17 +696,18 @@ func buildCacheKey(isolation, proxyKey string, accountID int64) string {
 //   - raw: 原始代理 URL 字符串
 //
 // 返回:
-//   - string: 标准化的代理键（空或解析失败返回 "direct"）
-//   - *url.URL: 解析后的 URL（空或解析失败返回 nil）
-func normalizeProxyURL(raw string) (string, *url.URL) {
-	proxyURL := strings.TrimSpace(raw)
-	if proxyURL == "" {
-		return directProxyKey, nil
-	}
-	parsed, err := url.Parse(proxyURL)
+//   - string: 标准化的代理键（空返回 "direct"）
+//   - *url.URL: 解析后的 URL（空返回 nil）
+//   - error: 非空代理 URL 解析失败时返回错误（禁止回退到直连）
+func normalizeProxyURL(raw string) (string, *url.URL, error) {
+	_, parsed, err := proxyurl.Parse(raw)
 	if err != nil {
-		return directProxyKey, nil
+		return "", nil, err
 	}
+	if parsed == nil {
+		return directProxyKey, nil, nil
+	}
+	// 规范化：小写 scheme/host，去除路径和查询参数
 	parsed.Scheme = strings.ToLower(parsed.Scheme)
 	parsed.Host = strings.ToLower(parsed.Host)
 	parsed.Path = ""
@@ -710,7 +727,7 @@ func normalizeProxyURL(raw string) (string, *url.URL) {
 			parsed.Host = hostname
 		}
 	}
-	return parsed.String(), parsed
+	return parsed.String(), parsed, nil
 }
 
 // defaultPoolSettings 获取默认连接池配置
@@ -876,4 +893,57 @@ func wrapTrackedBody(body io.ReadCloser, onClose func()) io.ReadCloser {
 		return body
 	}
 	return &trackedBody{ReadCloser: body, onClose: onClose}
+}
+
+// decompressResponseBody 根据 Content-Encoding 解压响应体。
+// 当请求显式设置了 accept-encoding 时，Go 的 Transport 不会自动解压，需要手动处理。
+// 解压成功后会删除 Content-Encoding 和 Content-Length header（长度已不准确）。
+func decompressResponseBody(resp *http.Response) {
+	if resp == nil || resp.Body == nil {
+		return
+	}
+	ce := strings.ToLower(strings.TrimSpace(resp.Header.Get("Content-Encoding")))
+	if ce == "" {
+		return
+	}
+
+	var reader io.Reader
+	switch ce {
+	case "gzip":
+		gr, err := gzip.NewReader(resp.Body)
+		if err != nil {
+			return // 解压失败，保持原样
+		}
+		reader = gr
+	case "br":
+		reader = brotli.NewReader(resp.Body)
+	case "deflate":
+		reader = flate.NewReader(resp.Body)
+	default:
+		return
+	}
+
+	originalBody := resp.Body
+	resp.Body = &decompressedBody{reader: reader, closer: originalBody}
+	resp.Header.Del("Content-Encoding")
+	resp.Header.Del("Content-Length") // 解压后长度不确定
+	resp.ContentLength = -1
+}
+
+// decompressedBody 组合解压 reader 和原始 body 的 close。
+type decompressedBody struct {
+	reader io.Reader
+	closer io.Closer
+}
+
+func (d *decompressedBody) Read(p []byte) (int, error) {
+	return d.reader.Read(p)
+}
+
+func (d *decompressedBody) Close() error {
+	// 如果 reader 本身也是 Closer（如 gzip.Reader），先关闭它
+	if rc, ok := d.reader.(io.Closer); ok {
+		_ = rc.Close()
+	}
+	return d.closer.Close()
 }

@@ -91,13 +91,18 @@ func (s *UsageService) Create(ctx context.Context, req CreateUsageLogRequest) (*
 		return nil, fmt.Errorf("get user: %w", err)
 	}
 
+	requestID := ""
+	if req.RequestID != nil {
+		requestID = *req.RequestID
+	}
+
 	// 创建使用日志
 	usageLog := &UsageLog{
 		UserID:                req.UserID,
 		APIKeyID:              req.APIKeyID,
 		AccountID:             req.AccountID,
 		ClientRequestID:       req.ClientRequestID,
-		RequestID:             req.RequestID,
+		RequestID:             requestID,
 		Model:                 req.Model,
 		InputTokens:           req.InputTokens,
 		OutputTokens:          req.OutputTokens,
@@ -290,6 +295,15 @@ func (s *UsageService) GetUserDashboardStats(ctx context.Context, userID int64) 
 	return stats, nil
 }
 
+// GetAPIKeyDashboardStats returns dashboard summary stats filtered by API Key.
+func (s *UsageService) GetAPIKeyDashboardStats(ctx context.Context, apiKeyID int64) (*usagestats.UserDashboardStats, error) {
+	stats, err := s.usageRepo.GetAPIKeyDashboardStats(ctx, apiKeyID)
+	if err != nil {
+		return nil, fmt.Errorf("get api key dashboard stats: %w", err)
+	}
+	return stats, nil
+}
+
 // GetUserUsageTrendByUserID returns per-user usage trend.
 func (s *UsageService) GetUserUsageTrendByUserID(ctx context.Context, userID int64, startTime, endTime time.Time, granularity string) ([]usagestats.TrendDataPoint, error) {
 	trend, err := s.usageRepo.GetUserUsageTrendByUserID(ctx, userID, startTime, endTime, granularity)
@@ -308,9 +322,18 @@ func (s *UsageService) GetUserModelStats(ctx context.Context, userID int64, star
 	return stats, nil
 }
 
+// GetAPIKeyModelStats returns per-model usage stats for a specific API Key.
+func (s *UsageService) GetAPIKeyModelStats(ctx context.Context, apiKeyID int64, startTime, endTime time.Time) ([]usagestats.ModelStat, error) {
+	stats, err := s.usageRepo.GetModelStatsWithFilters(ctx, startTime, endTime, 0, apiKeyID, 0, 0, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("get api key model stats: %w", err)
+	}
+	return stats, nil
+}
+
 // GetBatchAPIKeyUsageStats returns today/total actual_cost for given api keys.
-func (s *UsageService) GetBatchAPIKeyUsageStats(ctx context.Context, apiKeyIDs []int64) (map[int64]*usagestats.BatchAPIKeyUsageStats, error) {
-	stats, err := s.usageRepo.GetBatchAPIKeyUsageStats(ctx, apiKeyIDs)
+func (s *UsageService) GetBatchAPIKeyUsageStats(ctx context.Context, apiKeyIDs []int64, startTime, endTime time.Time) (map[int64]*usagestats.BatchAPIKeyUsageStats, error) {
+	stats, err := s.usageRepo.GetBatchAPIKeyUsageStats(ctx, apiKeyIDs, startTime, endTime)
 	if err != nil {
 		return nil, fmt.Errorf("get batch api key usage stats: %w", err)
 	}

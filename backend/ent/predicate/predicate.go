@@ -15,8 +15,20 @@ type Account func(*sql.Selector)
 // AccountGroup is the predicate function for accountgroup builders.
 type AccountGroup func(*sql.Selector)
 
+// Announcement is the predicate function for announcement builders.
+type Announcement func(*sql.Selector)
+
+// AnnouncementRead is the predicate function for announcementread builders.
+type AnnouncementRead func(*sql.Selector)
+
+// ErrorPassthroughRule is the predicate function for errorpassthroughrule builders.
+type ErrorPassthroughRule func(*sql.Selector)
+
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
+
+// IdempotencyRecord is the predicate function for idempotencyrecord builders.
+type IdempotencyRecord func(*sql.Selector)
 
 // PromoCode is the predicate function for promocode builders.
 type PromoCode func(*sql.Selector)
@@ -32,6 +44,9 @@ type RedeemCode func(*sql.Selector)
 
 // RequestLog is the predicate function for requestlog builders.
 type RequestLog func(*sql.Selector)
+
+// SecuritySecret is the predicate function for securitysecret builders.
+type SecuritySecret func(*sql.Selector)
 
 // Setting is the predicate function for setting builders.
 type Setting func(*sql.Selector)

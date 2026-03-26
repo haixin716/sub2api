@@ -2,11 +2,13 @@
 
 <div align="center">
 
-[![Go](https://img.shields.io/badge/Go-1.25.5-00ADD8.svg)](https://golang.org/)
+[![Go](https://img.shields.io/badge/Go-1.25.7-00ADD8.svg)](https://golang.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.4+-4FC08D.svg)](https://vuejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791.svg)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7+-DC382D.svg)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+
+<a href="https://trendshift.io/repositories/21823" target="_blank"><img src="https://trendshift.io/api/badge/repositories/21823" alt="Wei-Shaw%2Fsub2api | Trendshift" width="250" height="55"/></a>
 
 **AI API Gateway Platform for Subscription Quota Distribution**
 
@@ -14,21 +16,23 @@ English | [中文](README_CN.md)
 
 </div>
 
+> **Sub2API officially uses only the domains `sub2api.org` and `pincc.ai`. Other websites using the Sub2API name may be third-party deployments or services and are not affiliated with this project. Please verify and exercise your own judgment.**
+
 ---
 
 ## Demo
 
-Try Sub2API online: **https://demo.sub2api.org/**
+Try Sub2API online: **[https://demo.sub2api.org/](https://demo.sub2api.org/)**
 
 Demo credentials (shared demo environment; **not** created automatically for self-hosted installs):
 
 | Email | Password |
 |-------|----------|
-| admin@sub2api.com | admin123 |
+| admin@sub2api.org | admin123 |
 
 ## Overview
 
-Sub2API is an AI API gateway platform designed to distribute and manage API quotas from AI product subscriptions (like Claude Code $200/month). Users can access upstream AI services through platform-generated API Keys, while the platform handles authentication, billing, load balancing, and request forwarding.
+Sub2API is an AI API gateway platform designed to distribute and manage API quotas from AI product subscriptions. Users can access upstream AI services through platform-generated API Keys, while the platform handles authentication, billing, load balancing, and request forwarding.
 
 ## Features
 
@@ -39,21 +43,46 @@ Sub2API is an AI API gateway platform designed to distribute and manage API quot
 - **Concurrency Control** - Per-user and per-account concurrency limits
 - **Rate Limiting** - Configurable request and token rate limits
 - **Admin Dashboard** - Web interface for monitoring and management
+- **External System Integration** - Embed external systems (e.g. payment, ticketing) via iframe to extend the admin dashboard
+
+## Don't Want to Self-Host?
+
+<table>
+<tr>
+<td width="180" align="center" valign="middle"><a href="https://shop.pincc.ai/"><img src="assets/partners/logos/pincc-logo.png" alt="pincc" width="120"></a></td>
+<td valign="middle"><b><a href="https://shop.pincc.ai/">PinCC</a></b> is the official relay service built on Sub2API, offering stable access to Claude Code, Codex, Gemini and other popular models — ready to use, no deployment or maintenance required.</td>
+</tr>
+</table>
+
+## Ecosystem
+
+Community projects that extend or integrate with Sub2API:
+
+| Project | Description | Features |
+|---------|-------------|----------|
+| [Sub2ApiPay](https://github.com/touwaeriol/sub2apipay) | Self-service payment system | Self-service top-up and subscription purchase; supports YiPay protocol, WeChat Pay, Alipay, Stripe; embeddable via iframe |
+| [sub2api-mobile](https://github.com/ckken/sub2api-mobile) | Mobile admin console | Cross-platform app (iOS/Android/Web) for user management, account management, monitoring dashboard, and multi-backend switching; built with Expo + React Native |
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| Backend | Go 1.25.5, Gin, Ent |
+| Backend | Go 1.25.7, Gin, Ent |
 | Frontend | Vue 3.4+, Vite 5+, TailwindCSS |
 | Database | PostgreSQL 15+ |
 | Cache/Queue | Redis 7+ |
 
 ---
 
-## Documentation
+## Nginx Reverse Proxy Note
 
-- Dependency Security: `docs/dependency-security.md`
+When using Nginx as a reverse proxy for Sub2API (or CRS) with Codex CLI, add the following to the `http` block in your Nginx configuration:
+
+```nginx
+underscores_in_headers on;
+```
+
+Nginx drops headers containing underscores by default (e.g. `session_id`), which breaks sticky session routing in multi-account setups.
 
 ---
 
@@ -128,7 +157,7 @@ curl -sSL https://raw.githubusercontent.com/Wei-Shaw/sub2api/main/deploy/install
 
 ---
 
-### Method 2: Docker Compose
+### Method 2: Docker Compose (Recommended)
 
 Deploy with Docker Compose, including PostgreSQL and Redis containers.
 
@@ -137,28 +166,58 @@ Deploy with Docker Compose, including PostgreSQL and Redis containers.
 - Docker 20.10+
 - Docker Compose v2+
 
-#### Installation Steps
+#### Quick Start (One-Click Deployment)
+
+Use the automated deployment script for easy setup:
+
+```bash
+# Create deployment directory
+mkdir -p sub2api-deploy && cd sub2api-deploy
+
+# Download and run deployment preparation script
+curl -sSL https://raw.githubusercontent.com/Wei-Shaw/sub2api/main/deploy/docker-deploy.sh | bash
+
+# Start services
+docker compose up -d
+
+# View logs
+docker compose logs -f sub2api
+```
+
+**What the script does:**
+- Downloads `docker-compose.local.yml` (saved as `docker-compose.yml`) and `.env.example`
+- Generates secure credentials (JWT_SECRET, TOTP_ENCRYPTION_KEY, POSTGRES_PASSWORD)
+- Creates `.env` file with auto-generated secrets
+- Creates data directories (uses local directories for easy backup/migration)
+- Displays generated credentials for your reference
+
+#### Manual Deployment
+
+If you prefer manual setup:
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Wei-Shaw/sub2api.git
-cd sub2api
+cd sub2api/deploy
 
-# 2. Enter the deploy directory
-cd deploy
-
-# 3. Copy environment configuration
+# 2. Copy environment configuration
 cp .env.example .env
 
-# 4. Edit configuration (set your passwords)
+# 3. Edit configuration (generate secure passwords)
 nano .env
 ```
 
 **Required configuration in `.env`:**
 
 ```bash
-# PostgreSQL password (REQUIRED - change this!)
+# PostgreSQL password (REQUIRED)
 POSTGRES_PASSWORD=your_secure_password_here
+
+# JWT Secret (RECOMMENDED - keeps users logged in after restart)
+JWT_SECRET=your_jwt_secret_here
+
+# TOTP Encryption Key (RECOMMENDED - preserves 2FA after restart)
+TOTP_ENCRYPTION_KEY=your_totp_key_here
 
 # Optional: Admin account
 ADMIN_EMAIL=admin@example.com
@@ -166,58 +225,98 @@ ADMIN_PASSWORD=your_admin_password
 
 # Optional: Custom port
 SERVER_PORT=8080
+```
 
-# Optional: Security configuration
-# Enable URL allowlist validation (false to skip allowlist checks, only basic format validation)
-SECURITY_URL_ALLOWLIST_ENABLED=false
+**Generate secure secrets:**
+```bash
+# Generate JWT_SECRET
+openssl rand -hex 32
 
-# Allow insecure HTTP URLs when allowlist is disabled (default: false, requires https)
-# ⚠️ WARNING: Enabling this allows HTTP (plaintext) URLs which can expose API keys
-#             Only recommended for:
-#             - Development/testing environments
-#             - Internal networks with trusted endpoints
-#             - When using local test servers (http://localhost)
-# PRODUCTION: Keep this false or use HTTPS URLs only
-SECURITY_URL_ALLOWLIST_ALLOW_INSECURE_HTTP=false
+# Generate TOTP_ENCRYPTION_KEY
+openssl rand -hex 32
 
-# Allow private IP addresses for upstream/pricing/CRS (for internal deployments)
-SECURITY_URL_ALLOWLIST_ALLOW_PRIVATE_HOSTS=false
+# Generate POSTGRES_PASSWORD
+openssl rand -hex 32
 ```
 
 ```bash
+# 4. Create data directories (for local version)
+mkdir -p data postgres_data redis_data
+
 # 5. Start all services
-docker-compose up -d
+# Option A: Local directory version (recommended - easy migration)
+docker compose -f docker-compose.local.yml up -d
+
+# Option B: Named volumes version (simple setup)
+docker compose up -d
 
 # 6. Check status
-docker-compose ps
+docker compose -f docker-compose.local.yml ps
 
 # 7. View logs
-docker-compose logs -f sub2api
+docker compose -f docker-compose.local.yml logs -f sub2api
 ```
+
+#### Deployment Versions
+
+| Version | Data Storage | Migration | Best For |
+|---------|-------------|-----------|----------|
+| **docker-compose.local.yml** | Local directories | ✅ Easy (tar entire directory) | Production, frequent backups |
+| **docker-compose.yml** | Named volumes | ⚠️ Requires docker commands | Simple setup |
+
+**Recommendation:** Use `docker-compose.local.yml` (deployed by script) for easier data management.
 
 #### Access
 
 Open `http://YOUR_SERVER_IP:8080` in your browser.
 
+If admin password was auto-generated, find it in logs:
+```bash
+docker compose -f docker-compose.local.yml logs sub2api | grep "admin password"
+```
+
 #### Upgrade
 
 ```bash
 # Pull latest image and recreate container
-docker-compose pull
-docker-compose up -d
+docker compose -f docker-compose.local.yml pull
+docker compose -f docker-compose.local.yml up -d
+```
+
+#### Easy Migration (Local Directory Version)
+
+When using `docker-compose.local.yml`, migrate to a new server easily:
+
+```bash
+# On source server
+docker compose -f docker-compose.local.yml down
+cd ..
+tar czf sub2api-complete.tar.gz sub2api-deploy/
+
+# Transfer to new server
+scp sub2api-complete.tar.gz user@new-server:/path/
+
+# On new server
+tar xzf sub2api-complete.tar.gz
+cd sub2api-deploy/
+docker compose -f docker-compose.local.yml up -d
 ```
 
 #### Useful Commands
 
 ```bash
 # Stop all services
-docker-compose down
+docker compose -f docker-compose.local.yml down
 
 # Restart
-docker-compose restart
+docker compose -f docker-compose.local.yml restart
 
 # View all logs
-docker-compose logs -f
+docker compose -f docker-compose.local.yml logs -f
+
+# Remove all data (caution!)
+docker compose -f docker-compose.local.yml down
+rm -rf data/ postgres_data/ redis_data/
 ```
 
 ---
@@ -292,6 +391,12 @@ default:
   api_key_prefix: "sk-"
   rate_multiplier: 1.0
 ```
+
+### Sora Status (Temporarily Unavailable)
+
+> ⚠️ Sora-related features are temporarily unavailable due to technical issues in upstream integration and media delivery.
+> Please do not rely on Sora in production at this time.
+> Existing `gateway.sora_*` configuration keys are reserved and may not take effect until these issues are resolved.
 
 Additional security-related options are available in `config.yaml`:
 
@@ -444,6 +549,28 @@ sub2api/
     ├── config.example.yaml   # Full config file for binary deployment
     └── install.sh            # One-click installation script
 ```
+
+## Disclaimer
+
+> **Please read carefully before using this project:**
+>
+> :rotating_light: **Terms of Service Risk**: Using this project may violate Anthropic's Terms of Service. Please read Anthropic's user agreement carefully before use. All risks arising from the use of this project are borne solely by the user.
+>
+> :book: **Disclaimer**: This project is for technical learning and research purposes only. The author assumes no responsibility for account suspension, service interruption, or any other losses caused by the use of this project.
+
+---
+
+## Star History
+
+<a href="https://star-history.com/#Wei-Shaw/sub2api&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Wei-Shaw/sub2api&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Wei-Shaw/sub2api&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Wei-Shaw/sub2api&type=Date" />
+ </picture>
+</a>
+
+---
 
 ## License
 

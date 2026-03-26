@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from '../client'
-import type { AdminUser, UpdateUserRequest, PaginatedResponse } from '@/types'
+import type { AdminUser, UpdateUserRequest, PaginatedResponse, ApiKey } from '@/types'
 
 /**
  * List all users with pagination
@@ -21,7 +21,9 @@ export async function list(
     status?: 'active' | 'disabled'
     role?: 'admin' | 'user'
     search?: string
+    group_name?: string         // fuzzy filter by allowed group name
     attributes?: Record<number, string>  // attributeId -> value
+    include_subscriptions?: boolean
   },
   options?: {
     signal?: AbortSignal
@@ -33,7 +35,9 @@ export async function list(
     page_size: pageSize,
     status: filters?.status,
     role: filters?.role,
-    search: filters?.search
+    search: filters?.search,
+    group_name: filters?.group_name,
+    include_subscriptions: filters?.include_subscriptions
   }
 
   // Add attribute filters as attr[id]=value
@@ -145,8 +149,8 @@ export async function toggleStatus(id: number, status: 'active' | 'disabled'): P
  * @param id - User ID
  * @returns List of user's API keys
  */
-export async function getUserApiKeys(id: number): Promise<PaginatedResponse<any>> {
-  const { data } = await apiClient.get<PaginatedResponse<any>>(`/admin/users/${id}/api-keys`)
+export async function getUserApiKeys(id: number): Promise<PaginatedResponse<ApiKey>> {
+  const { data } = await apiClient.get<PaginatedResponse<ApiKey>>(`/admin/users/${id}/api-keys`)
   return data
 }
 
@@ -174,6 +178,72 @@ export async function getUserUsageStats(
   return data
 }
 
+/**
+ * Balance history item returned from the API
+ */
+export interface BalanceHistoryItem {
+  id: number
+  code: string
+  type: string
+  value: number
+  status: string
+  used_by: number | null
+  used_at: string | null
+  created_at: string
+  group_id: number | null
+  validity_days: number
+  notes: string
+  user?: { id: number; email: string } | null
+  group?: { id: number; name: string } | null
+}
+
+// Balance history response extends pagination with total_recharged summary
+export interface BalanceHistoryResponse extends PaginatedResponse<BalanceHistoryItem> {
+  total_recharged: number
+}
+
+/**
+ * Get user's balance/concurrency change history
+ * @param id - User ID
+ * @param page - Page number
+ * @param pageSize - Items per page
+ * @param type - Optional type filter (balance, admin_balance, concurrency, admin_concurrency, subscription)
+ * @returns Paginated balance history with total_recharged
+ */
+export async function getUserBalanceHistory(
+  id: number,
+  page: number = 1,
+  pageSize: number = 20,
+  type?: string
+): Promise<BalanceHistoryResponse> {
+  const params: Record<string, any> = { page, page_size: pageSize }
+  if (type) params.type = type
+  const { data } = await apiClient.get<BalanceHistoryResponse>(
+    `/admin/users/${id}/balance-history`,
+    { params }
+  )
+  return data
+}
+
+/**
+ * Replace user's exclusive group
+ * @param userId - User ID
+ * @param oldGroupId - Current group ID to replace
+ * @param newGroupId - New group ID to replace with
+ * @returns Number of migrated keys
+ */
+export async function replaceGroup(
+  userId: number,
+  oldGroupId: number,
+  newGroupId: number
+): Promise<{ migrated_keys: number }> {
+  const { data } = await apiClient.post<{ migrated_keys: number }>(
+    `/admin/users/${userId}/replace-group`,
+    { old_group_id: oldGroupId, new_group_id: newGroupId }
+  )
+  return data
+}
+
 export const usersAPI = {
   list,
   getById,
@@ -184,7 +254,9 @@ export const usersAPI = {
   updateConcurrency,
   toggleStatus,
   getUserApiKeys,
-  getUserUsageStats
+  getUserUsageStats,
+  getUserBalanceHistory,
+  replaceGroup
 }
 
 export default usersAPI
