@@ -266,6 +266,13 @@ func ProvideUsageCleanupService(repo UsageCleanupRepository, timingWheel *Timing
 	return svc
 }
 
+// ProvideRequestLogCleanupService 创建并启动请求记录清理任务服务
+func ProvideRequestLogCleanupService(repo RequestLogCleanupRepository, timingWheel *TimingWheelService, cfg *config.Config) *RequestLogCleanupService {
+	svc := NewRequestLogCleanupService(repo, timingWheel, cfg)
+	svc.Start()
+	return svc
+}
+
 // ProvideAccountExpiryService creates and starts AccountExpiryService.
 func ProvideAccountExpiryService(accountRepo AccountRepository) *AccountExpiryService {
 	svc := NewAccountExpiryService(accountRepo, time.Minute)
@@ -723,6 +730,7 @@ var ProviderSet = wire.NewSet(
 	ProvideTimingWheelService,
 	ProvideDashboardAggregationService,
 	ProvideUsageCleanupService,
+	ProvideRequestLogCleanupService,
 	ProvideDeferredService,
 	NewAntigravityQuotaFetcher,
 	NewGrokQuotaFetcher,

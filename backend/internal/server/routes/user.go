@@ -99,6 +99,13 @@ func RegisterUserRoutes(
 			usage.POST("/dashboard/api-keys-usage", h.Usage.DashboardAPIKeysUsage)
 		}
 
+		// 请求记录
+		requests := authenticated.Group("/requests")
+		{
+			requests.GET("", h.Request.List)
+			requests.GET("/:id", h.Request.GetByID)
+		}
+
 		// 公告（用户可见）
 		announcements := authenticated.Group("/announcements")
 		{

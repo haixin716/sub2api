@@ -525,6 +525,10 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 			// ForceCacheBilling 提前拍成标量，避免 worker 闭包保活 failover 状态里的响应体。
 			forceCacheBilling := fs.ForceCacheBilling
 			quotaPlatform := service.QuotaPlatform(c.Request.Context(), apiKey)
+			requestBody := string(body)
+			requestMethod := c.Request.Method
+			requestPath := c.Request.URL.Path
+			responseStatus := c.Writer.Status()
 			h.submitUsageRecordTask(c.Request.Context(), func(ctx context.Context) {
 				if err := h.gatewayService.RecordUsage(ctx, &service.RecordUsageInput{
 					Result:             result,
@@ -550,6 +554,25 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 						zap.String("model", reqModel),
 						zap.Int64("account_id", account.ID),
 					).Error("gateway.record_usage_failed", zap.Error(err))
+				}
+				if err := h.gatewayService.RecordRequest(ctx, &service.RecordRequestInput{
+					Result:         result,
+					APIKey:         apiKey,
+					User:           apiKey.User,
+					Account:        account,
+					UserAgent:      userAgent,
+					IPAddress:      clientIP,
+					RequestBody:    requestBody,
+					RequestMethod:  requestMethod,
+					RequestPath:    requestPath,
+					ResponseStatus: responseStatus,
+				}); err != nil {
+					logger.L().With(
+						zap.String("component", "handler.gateway.messages"),
+						zap.Int64("user_id", subject.UserID),
+						zap.Int64("api_key_id", apiKey.ID),
+						zap.Int64("account_id", account.ID),
+					).Error("gateway.record_request_failed", zap.Error(err))
 				}
 			})
 			return
@@ -957,6 +980,10 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 			// ForceCacheBilling 提前拍成标量，避免 worker 闭包保活 failover 状态里的响应体。
 			forceCacheBilling := fs.ForceCacheBilling
 			quotaPlatform := service.QuotaPlatform(c.Request.Context(), currentAPIKey)
+			requestBody := string(body)
+			requestMethod := c.Request.Method
+			requestPath := c.Request.URL.Path
+			responseStatus := c.Writer.Status()
 			h.submitUsageRecordTask(c.Request.Context(), func(ctx context.Context) {
 				if err := h.gatewayService.RecordUsage(ctx, &service.RecordUsageInput{
 					Result:             result,
@@ -982,6 +1009,25 @@ func (h *GatewayHandler) Messages(c *gin.Context) {
 						zap.String("model", reqModel),
 						zap.Int64("account_id", account.ID),
 					).Error("gateway.record_usage_failed", zap.Error(err))
+				}
+				if err := h.gatewayService.RecordRequest(ctx, &service.RecordRequestInput{
+					Result:         result,
+					APIKey:         currentAPIKey,
+					User:           currentAPIKey.User,
+					Account:        account,
+					UserAgent:      userAgent,
+					IPAddress:      clientIP,
+					RequestBody:    requestBody,
+					RequestMethod:  requestMethod,
+					RequestPath:    requestPath,
+					ResponseStatus: responseStatus,
+				}); err != nil {
+					logger.L().With(
+						zap.String("component", "handler.gateway.messages"),
+						zap.Int64("user_id", subject.UserID),
+						zap.Int64("api_key_id", currentAPIKey.ID),
+						zap.Int64("account_id", account.ID),
+					).Error("gateway.record_request_failed", zap.Error(err))
 				}
 			})
 			return
