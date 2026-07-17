@@ -1,0 +1,93 @@
+backend/internal/handler/gateway_key_billing_test.go
+  s_7f9e95220530b8::t_ce99b7d8e6f6d1 45
+  s_7f9e95220530b8::t_5111515dc95b6c 44
+backend/migrations/046_add_client_request_id.sql
+  s_7f9e95220530b8::t_3a057eec4e8af8 1-94
+frontend/src/i18n/locales/zh/common.ts
+  s_7f9e95220530b8::t_d1d90bd9a05c67 155
+frontend/src/api/admin/index.ts
+  s_7f9e95220530b8::t_d1d90bd9a05c67 18,55,90
+backend/internal/service/gateway_service.go
+  s_7f9e95220530b8::t_ff7150edf0bc02 666,707,740
+frontend/src/router/index.ts
+  s_7f9e95220530b8::t_d1d90bd9a05c67 233-243,613-623
+backend/internal/handler/admin/request_handler.go
+  s_7f9e95220530b8::t_efd5bf131bae6c 1-407
+backend/internal/server/routes/user.go
+  s_7f9e95220530b8::t_2662ac1c8f5101 102-108
+backend/internal/handler/gateway_models_test.go
+  s_7f9e95220530b8::t_5111515dc95b6c 58
+backend/internal/service/request_log.go
+  s_7f9e95220530b8::t_b71e79e1ecf464 1-98
+backend/internal/handler/handler.go
+  s_7f9e95220530b8::t_2662ac1c8f5101 29,51
+backend/diagnose_db.sh
+  s_7f9e95220530b8::t_8765cc200c3b1a 1-22
+backend/internal/server/routes/gateway_key_billing_test.go
+  s_7f9e95220530b8::t_5111515dc95b6c 79
+  s_7f9e95220530b8::t_ce99b7d8e6f6d1 80
+backend/fix_unique_constraint.sql
+  s_7f9e95220530b8::t_07aed725694f93 1-23
+backend/internal/handler/wire.go
+  s_7f9e95220530b8::t_2662ac1c8f5101 32,70,112,135,160,196
+backend/internal/handler/dto/request_log.go
+  s_7f9e95220530b8::t_9cb95d5e6c297b 1-30,34-150
+  s_7f9e95220530b8::t_b71e79e1ecf464 31-33
+backend/internal/repository/migrations_runner_checksum_test.go
+  s_7f9e95220530b8::t_50d2af98a96884 10-18
+backend/internal/server/routes/admin.go
+  s_7f9e95220530b8::t_2662ac1c8f5101 87-89,625-634
+  s_7f9e95220530b8::t_62a23382074524 635-637
+backend/fix_constraints_now.sql
+  s_7f9e95220530b8::t_07aed725694f93 1-60
+frontend/src/api/index.ts
+  s_7f9e95220530b8::t_d1d90bd9a05c67 15
+backend/internal/handler/gateway_handler.go
+  s_7f9e95220530b8::t_9acf7b678ec620 528-531,558-576,983-986,1013-1031
+backend/internal/service/gateway_request_log_test.go
+  s_7f9e95220530b8::t_70d5a594507b34 52-60
+  s_7f9e95220530b8::t_353a7585fc59de 1-51,61-91
+frontend/src/i18n/locales/en/common.ts
+  s_7f9e95220530b8::t_d1d90bd9a05c67 155
+backend/cmd/server/wire.go
+  s_7f9e95220530b8::t_ca86501e989eab 87,175-177
+  s_7f9e95220530b8::t_d519f03e6140d9 178-180
+frontend/src/components/layout/AppSidebar.vue
+  s_7f9e95220530b8::t_d1d90bd9a05c67 706,805
+backend/cmd/server/wire_gen_test.go
+  s_7f9e95220530b8::t_5706adf232164b 67
+backend/internal/service/request_log_service.go
+  s_7f9e95220530b8::t_b71e79e1ecf464 1-43
+backend/internal/service/gateway_record_usage_test.go
+  s_7f9e95220530b8::t_5111515dc95b6c 25
+backend/internal/repository/wire.go
+  s_7f9e95220530b8::t_2662ac1c8f5101 82-83
+backend/migrations/182_restore_usage_log_request_id_invariant.sql
+  s_7f9e95220530b8::t_b05d4f235d899d 1-14
+backend/internal/service/gateway_request_log.go
+  s_7f9e95220530b8::t_755fc387643e82 1-99
+backend/internal/handler/gateway_handler_warmup_intercept_unit_test.go
+  s_7f9e95220530b8::t_5111515dc95b6c 168
+backend/check_table_structure.sql
+  s_7f9e95220530b8::t_07aed725694f93 1-43
+backend/internal/handler/gateway_handler_cancellation_test.go
+  s_7f9e95220530b8::t_5111515dc95b6c 43
+backend/internal/repository/migrations_runner.go
+  s_7f9e95220530b8::t_403dbffbe181ca 71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "d9ca208fd76bc2451ffbed885c1a17c37a29327f",
+  "prompts": {},
+  "sessions": {
+    "s_7f9e95220530b8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f6dc1-8063-7162-a931-5f22f1f198bd",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "linhaixin <linhaixin@helipay.com>"
+    }
+  }
+}
